@@ -1,0 +1,23 @@
+# Vercel
+.vercel
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+logs
+
+# Local env / secrets
+.env
+.env.*
+*.local

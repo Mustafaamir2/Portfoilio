@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#FBFAFF" />
+
+<title>Nova Weaver — Creative Designer, Developer & Digital Experience Creator</title>
+<meta name="description" content="An independent creative designer and developer building immersive brand identities, interfaces and 3D digital experiences. Selected work: SchoolFlow360, AURA by HS, Cyber Campus and Genesis." />
+<meta name="author" content="Nova Weaver" />
+<link rel="canonical" href="https://nova-weaver.example/" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Nova Weaver — I don't just design. I create experiences." />
+<meta property="og:description" content="A luxury digital art gallery meets a futuristic creative studio. Interactive 3D portfolio of a creative designer, developer and digital experience creator." />
+<meta property="og:image" content="assets/project-genesis.jpg" />
+<meta property="og:url" content="https://nova-weaver.example/" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Nova Weaver — I don't just design. I create experiences." />
+<meta name="twitter:description" content="Interactive 3D portfolio of a creative designer, developer and digital experience creator." />
+<meta name="twitter:image" content="assets/project-genesis.jpg" />
+
+<link rel="icon" href="assets/favicon.ico" sizes="any" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Nova Weaver",
+  "jobTitle": "Creative Designer, Developer & Digital Experience Creator",
+  "url": "https://nova-weaver.example/",
+  "knowsAbout": ["UI/UX Design", "Graphic Design", "Branding", "Web Development", "React", "Next.js", "Three.js", "Motion Design", "Creative Direction"],
+  "sameAs": [
+    "https://www.linkedin.com/",
+    "https://dribbble.com/",
+    "https://github.com/",
+    "https://www.behance.net/"
+  ]
+}
+</script>
+</head>
+
+<body class="is-loading">
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ============ AMBIENT ENVIRONMENT ============ -->
+<div class="environment" aria-hidden="true">
+  <span class="blob blob-1"></span>
+  <span class="blob blob-2"></span>
+  <span class="blob blob-3"></span>
+  <span class="blob blob-4"></span>
+  <span class="glass-sheen"></span>
+  <span class="grain"></span>
+</div>
+
+<div class="cursor" aria-hidden="true">
+  <span class="cursor-dot"></span>
+  <span class="cursor-halo"></span>
+</div>
+
+<div class="scroll-progress" aria-hidden="true"><span></span></div>
+
+<!-- ============ INTRO CURTAIN ============ -->
+<div class="curtain" id="curtain" aria-hidden="true">
+  <div class="curtain-inner">
+    <span class="curtain-mark">NW</span>
+    <span class="curtain-bar"><i></i></span>
+    <span class="curtain-note">Weaving the experience</span>
+  </div>
+</div>
+
+<!-- ============ NAVIGATION ============ -->
+<header class="nav-shell" id="nav">
+  <a class="brand" href="#home" aria-label="Nova Weaver — home">
+    <span class="brand-mark" aria-hidden="true">NW</span>
+    <span class="brand-text">Nova<em>Weaver</em></span>
+  </a>
+
+  <nav class="nav" aria-label="Main navigation">
+    <ul class="nav-list" id="nav-list">
+      <li><a href="#home" class="nav-link is-active" data-nav="home">Home</a></li>
+      <li><a href="#about" class="nav-link" data-nav="about">About</a></li>
+      <li><a href="#work" class="nav-link" data-nav="work">Work</a></li>
+      <li><a href="#skills" class="nav-link" data-nav="skills">Skills</a></li>
+      <li><a href="#experience" class="nav-link" data-nav="experience">Experience</a></li>
+      <li><a href="#contact" class="nav-link" data-nav="contact">Contact</a></li>
+      <li class="nav-indicator" aria-hidden="true"></li>
+    </ul>
+  </nav>
+
+  <p class="availability">
+    <span class="pulse" aria-hidden="true"></span>
+    Available for creative projects
+  </p>
+
+  <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="nav-list" aria-label="Open menu">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </button>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="home" aria-labelledby="hero-title">
+    <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="hero-fallback" aria-hidden="true"></div>
+
+    <div class="hero-copy">
+      <p class="eyebrow" data-reveal>Independent creative studio <span class="dot"></span> Est. 2018</p>
+
+      <h1 id="hero-title" class="display" data-split>
+        I don’t just <em>design.</em><br />I create experiences.
+      </h1>
+
+      <p class="hero-role" data-reveal data-delay="0.2">
+        Creative Designer <i aria-hidden="true"></i> Developer <i aria-hidden="true"></i> Digital Experience Creator
+      </p>
+
+      <div class="hero-actions" data-reveal data-delay="0.32">
+        <a class="btn btn-primary" href="#work" data-magnetic>
+          <span>Explore my work</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+        </a>
+        <a class="btn btn-ghost" href="#contact" data-magnetic>
+          <span>Start a project</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-meta" aria-hidden="true">
+      <span class="hero-index">01 <i></i> 08</span>
+      <span class="hero-hint">Drag anywhere to orbit</span>
+    </div>
+
+    <a class="scroll-cue" href="#about" aria-label="Scroll to the about section">
+      <span class="scroll-cue-text">Scroll to discover</span>
+      <span class="scroll-cue-rail" aria-hidden="true"><i></i></span>
+    </a>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="section about" id="about" aria-labelledby="about-title">
+    <p class="section-label" data-reveal><span>02</span> About the studio</p>
+
+    <div class="about-grid">
+      <div class="about-lead">
+        <h2 id="about-title" class="display display-sm" data-split>
+          A creative mind,<br />built for the <em>digital world.</em>
+        </h2>
+
+        <div class="about-copy">
+          <p data-reveal data-delay="0.1">
+            I work where design, technology and culture overlap — turning ambitious ideas into
+            digital experiences people actually remember.
+          </p>
+          <p data-reveal data-delay="0.18">
+            From sculptural brand identities to immersive product interfaces, every project starts
+            with curiosity and ends with clarity. No noise, no filler — only the details that earn
+            their place.
+          </p>
+        </div>
+
+        <dl class="about-stats" data-reveal data-delay="0.26">
+          <div><dt>Years of craft</dt><dd data-count="8">8</dd></div>
+          <div><dt>Projects shipped</dt><dd data-count="64">64</dd></div>
+          <div><dt>Design awards</dt><dd data-count="12">12</dd></div>
+        </dl>
+      </div>
+
+      <div class="about-stage" data-parallax="0.06">
+        <div class="profile-card" id="profile-card" data-tilt data-tilt-strength="16"
+             role="button" tabindex="0" aria-pressed="false" aria-label="Flip the profile card">
+          <div class="profile-face profile-front">
+            <span class="profile-mark">NW</span>
+            <span class="profile-role">Creative Designer<br />&amp; Developer</span>
+            <span class="profile-corner">01</span>
+            <span class="profile-flip-hint">Flip</span>
+            <span class="profile-shine" aria-hidden="true"></span>
+          </div>
+          <div class="profile-face profile-back">
+            <span class="profile-quote">“Design is the argument. Experience is the proof.”</span>
+          </div>
+        </div>
+        <span class="float-word float-word-1" aria-hidden="true">curiosity</span>
+        <span class="float-word float-word-2" aria-hidden="true">precision</span>
+        <span class="float-word float-word-3" aria-hidden="true">motion</span>
+        <span class="about-ring" aria-hidden="true"></span>
+        <span class="about-ring about-ring-2" aria-hidden="true"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SELECTED WORK ============ -->
+  <section class="section work" id="work" aria-labelledby="work-title">
+    <div class="work-head">
+      <p class="section-label" data-reveal><span>03</span> Selected work</p>
+      <h2 id="work-title" class="display display-sm" data-split>Projects with <em>presence.</em></h2>
+      <p class="work-hint" data-reveal data-delay="0.15">
+        <span class="hint-pointer">Drag, scroll or use <kbd>←</kbd> <kbd>→</kbd> to travel the gallery.</span>
+        <span class="hint-touch">Swipe to travel the gallery.</span>
+      </p>
+      <div class="work-nav">
+        <button class="round-btn" id="work-prev" aria-label="Previous project" data-magnetic>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
+        </button>
+        <button class="round-btn" id="work-next" aria-label="Next project" data-magnetic>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="gallery" id="gallery" role="region" aria-label="Project gallery, horizontally scrollable" tabindex="0">
+      <ul class="gallery-track" id="gallery-track">
+
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <div class="project-media">
+              <img src="assets/project-schoolflow.jpg" alt="SchoolFlow360 academic operating system interface" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">01</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </div>
+            <div class="project-body">
+              <p class="project-cat">SaaS / Education Technology</p>
+              <h3 class="project-title">SchoolFlow360</h3>
+              <p class="project-desc">A unified academic operating system turning complex school workflows into calm, intuitive moments.</p>
+              <ul class="tech-list"><li>Product Design</li><li>React</li><li>Design System</li></ul>
+              <button class="project-open" data-open aria-label="View the SchoolFlow360 case study">
+                <span>View project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </button>
+            </div>
+          </article>
+
+          <template data-case>
+            <p class="case-cat">SaaS / Education Technology <span>2025</span></p>
+            <h2 class="case-title display display-sm">SchoolFlow360</h2>
+            <p class="case-lead">One operating system for the twelve tools a school was never meant to juggle.</p>
+            <img class="case-image" src="assets/project-schoolflow.jpg" alt="SchoolFlow360 dashboard views" loading="lazy" decoding="async" />
+            <div class="case-grid">
+              <div><h3>The challenge</h3><p>Administrators were running attendance, fees, timetables and parent communication across disconnected tools. Every task meant a context switch, and every context switch meant lost trust.</p></div>
+              <div><h3>The approach</h3><p>We rebuilt the workflow around a single daily rhythm — one surface that anticipates the next action instead of waiting for it. A strict design system keeps eighty screens feeling like one product.</p></div>
+              <div><h3>The outcome</h3><p>Administrative time dropped by 41%. Parent engagement doubled in the first term, and the platform now serves more than 120 campuses.</p></div>
+            </div>
+            <dl class="case-facts">
+              <div><dt>Role</dt><dd>Product design, design system, front-end</dd></div>
+              <div><dt>Timeline</dt><dd>7 months</dd></div>
+              <div><dt>Stack</dt><dd>React, TypeScript, Design tokens</dd></div>
+            </dl>
+          </template>
+        </li>
+
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <div class="project-media">
+              <img src="assets/project-aura.jpg" alt="AURA by HS luxury beauty brand identity" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">02</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </div>
+            <div class="project-body">
+              <p class="project-cat">Luxury Beauty / Branding</p>
+              <h3 class="project-title">AURA by HS</h3>
+              <p class="project-desc">A luminous identity and digital flagship shaped around ritual, tactility and quiet confidence.</p>
+              <ul class="tech-list"><li>Brand Strategy</li><li>Art Direction</li><li>Commerce</li></ul>
+              <button class="project-open" data-open aria-label="View the AURA by HS case study">
+                <span>View project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </button>
+            </div>
+          </article>
+
+          <template data-case>
+            <p class="case-cat">Luxury Beauty / Branding <span>2025</span></p>
+            <h2 class="case-title display display-sm">AURA by HS</h2>
+            <p class="case-lead">A beauty house that wanted to be felt before it was read.</p>
+            <img class="case-image" src="assets/project-aura.jpg" alt="AURA by HS identity system" loading="lazy" decoding="async" />
+            <div class="case-grid">
+              <div><h3>The challenge</h3><p>A founder-led beauty label entering a category built on volume and noise, with a product philosophy built on restraint.</p></div>
+              <div><h3>The approach</h3><p>An identity drawn from light itself — soft gradients, a bespoke serif, and packaging that reads like an object rather than a label. The digital flagship mirrors the ritual of the product.</p></div>
+              <div><h3>The outcome</h3><p>Sell-out launch collection, a 3.2× lift in average order value, and stockist interest from three luxury retailers within a quarter.</p></div>
+            </div>
+            <dl class="case-facts">
+              <div><dt>Role</dt><dd>Brand strategy, identity, art direction</dd></div>
+              <div><dt>Timeline</dt><dd>5 months</dd></div>
+              <div><dt>Deliverables</dt><dd>Identity system, packaging, flagship store</dd></div>
+            </dl>
+          </template>
+        </li>
+
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <div class="project-media">
+              <img src="assets/project-cyber-campus.jpg" alt="Cyber Campus immersive learning platform" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">03</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </div>
+            <div class="project-body">
+              <p class="project-cat">EdTech / Digital Platform</p>
+              <h3 class="project-title">Cyber Campus</h3>
+              <p class="project-desc">An immersive learning environment connecting people, knowledge and momentum across a living campus.</p>
+              <ul class="tech-list"><li>UX Strategy</li><li>3D Direction</li><li>WebGL</li></ul>
+              <button class="project-open" data-open aria-label="View the Cyber Campus case study">
+                <span>View project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </button>
+            </div>
+          </article>
+
+          <template data-case>
+            <p class="case-cat">EdTech / Digital Platform <span>2024</span></p>
+            <h2 class="case-title display display-sm">Cyber Campus</h2>
+            <p class="case-lead">Remote learning that finally has a sense of place.</p>
+            <img class="case-image" src="assets/project-cyber-campus.jpg" alt="Cyber Campus 3D environment" loading="lazy" decoding="async" />
+            <div class="case-grid">
+              <div><h3>The challenge</h3><p>Distance learners were completing courses but never forming a cohort. Retention fell off a cliff after week three.</p></div>
+              <div><h3>The approach</h3><p>A spatial interface where progress, peers and faculty exist in one navigable environment. Lightweight WebGL keeps it running on the laptops students actually own.</p></div>
+              <div><h3>The outcome</h3><p>Week-eight retention improved by 58%, and peer-to-peer sessions became the platform's most used feature.</p></div>
+            </div>
+            <dl class="case-facts">
+              <div><dt>Role</dt><dd>UX strategy, 3D direction, prototyping</dd></div>
+              <div><dt>Timeline</dt><dd>9 months</dd></div>
+              <div><dt>Stack</dt><dd>Three.js, WebGL, React</dd></div>
+            </dl>
+          </template>
+        </li>
+
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <div class="project-media">
+              <img src="assets/project-genesis.jpg" alt="Genesis digital product and brand launch system" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">04</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </div>
+            <div class="project-body">
+              <p class="project-cat">Digital Product / Branding</p>
+              <h3 class="project-title">Genesis</h3>
+              <p class="project-desc">A category-defining launch system where sculptural identity meets a precise digital product experience.</p>
+              <ul class="tech-list"><li>Creative Direction</li><li>Identity</li><li>Motion</li></ul>
+              <button class="project-open" data-open aria-label="View the Genesis case study">
+                <span>View project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </button>
+            </div>
+          </article>
+
+          <template data-case>
+            <p class="case-cat">Digital Product / Branding <span>2024</span></p>
+            <h2 class="case-title display display-sm">Genesis</h2>
+            <p class="case-lead">A launch that had to define a category before it could sell inside one.</p>
+            <img class="case-image" src="assets/project-genesis.jpg" alt="Genesis launch system" loading="lazy" decoding="async" />
+            <div class="case-grid">
+              <div><h3>The challenge</h3><p>A first-of-its-kind product with no reference points — and eleven weeks until an investor-facing launch.</p></div>
+              <div><h3>The approach</h3><p>One sculptural motif carried across identity, product UI and launch film, so every surface reinforced the same idea instead of explaining it again.</p></div>
+              <div><h3>The outcome</h3><p>14,000 waitlist signups in the launch week and a Series A closed two months later.</p></div>
+            </div>
+            <dl class="case-facts">
+              <div><dt>Role</dt><dd>Creative direction, identity, motion</dd></div>
+              <div><dt>Timeline</dt><dd>11 weeks</dd></div>
+              <div><dt>Deliverables</dt><dd>Identity, product UI, launch film</dd></div>
+            </dl>
+          </template>
+        </li>
+
+      </ul>
+    </div>
+
+    <div class="gallery-rail" aria-hidden="true"><span id="gallery-rail-fill"></span></div>
+  </section>
+
+  <!-- ============ SKILLS ============ -->
+  <section class="section skills" id="skills" aria-labelledby="skills-title">
+    <p class="section-label" data-reveal><span>04</span> Capabilities</p>
+    <h2 id="skills-title" class="display display-sm center" data-split>A constellation of <em>craft.</em></h2>
+    <p class="section-sub center" data-reveal data-delay="0.15">
+      <span class="hint-pointer">Hover or focus a node to see how it earns its place.</span>
+      <span class="hint-touch">Every node carries a note on how it earns its place.</span>
+    </p>
+
+    <div class="constellation" id="constellation">
+      <svg class="constellation-lines" id="constellation-lines" aria-hidden="true" preserveAspectRatio="none"></svg>
+      <ul class="skill-list">
+        <li><button class="skill" style="--x:14%;--y:24%;--d:0s;--s:1.05" data-skill><span class="skill-name">UI/UX Design</span><span class="skill-note">Interfaces that feel natural before they feel novel.</span></button></li>
+        <li><button class="skill" style="--x:37%;--y:12%;--d:-1.4s;--s:.92" data-skill><span class="skill-name">Graphic Design</span><span class="skill-note">Visual systems with rhythm, character and clarity.</span></button></li>
+        <li><button class="skill" style="--x:62%;--y:20%;--d:-2.6s;--s:1" data-skill><span class="skill-name">Branding</span><span class="skill-note">Distinctive identities built to stay recognizable.</span></button></li>
+        <li><button class="skill" style="--x:85%;--y:31%;--d:-3.9s;--s:.9" data-skill><span class="skill-name">Web Development</span><span class="skill-note">Expressive digital experiences engineered to perform.</span></button></li>
+        <li><button class="skill" style="--x:22%;--y:56%;--d:-2s;--s:.95" data-skill><span class="skill-name">React</span><span class="skill-note">Scalable, thoughtful interfaces with crafted details.</span></button></li>
+        <li><button class="skill" style="--x:48%;--y:45%;--d:-.7s;--s:1.12" data-skill><span class="skill-name">Three.js</span><span class="skill-note">Interactive worlds with dimensional presence.</span></button></li>
+        <li><button class="skill" style="--x:72%;--y:58%;--d:-3.1s;--s:.94" data-skill><span class="skill-name">Next.js</span><span class="skill-note">Fast, resilient digital products from idea to launch.</span></button></li>
+        <li><button class="skill" style="--x:33%;--y:80%;--d:-4.5s;--s:.98" data-skill><span class="skill-name">Motion Design</span><span class="skill-note">Movement that explains, guides and delights.</span></button></li>
+        <li><button class="skill" style="--x:63%;--y:86%;--d:-1.9s;--s:1.02" data-skill><span class="skill-name">Creative Direction</span><span class="skill-note">One coherent vision across every touchpoint.</span></button></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ EXPERIENCE ============ -->
+  <section class="section experience" id="experience" aria-labelledby="experience-title">
+    <p class="section-label" data-reveal><span>05</span> Experience</p>
+    <h2 id="experience-title" class="display display-sm" data-split>A decade of <em>building.</em></h2>
+
+    <ol class="timeline" id="timeline">
+      <li class="timeline-line" aria-hidden="true"><span id="timeline-fill"></span></li>
+
+      <li class="tl-item" data-reveal>
+        <span class="tl-node" aria-hidden="true"></span>
+        <div class="tl-card" data-tilt data-tilt-strength="6">
+          <time class="tl-year">2024 — Now</time>
+          <span class="tl-index" aria-hidden="true">01</span>
+          <h3>Independent Creative</h3>
+          <p>Creative direction, product design and immersive experiences for ambitious global brands.</p>
+          <ul class="tl-tags"><li>Creative Direction</li><li>3D</li><li>Product</li></ul>
+        </div>
+      </li>
+
+      <li class="tl-item" data-reveal>
+        <span class="tl-node" aria-hidden="true"></span>
+        <div class="tl-card" data-tilt data-tilt-strength="6">
+          <time class="tl-year">2022 — 2024</time>
+          <span class="tl-index" aria-hidden="true">02</span>
+          <h3>Lead Experience Designer</h3>
+          <p>Led multidisciplinary teams from early narrative through to shipped digital systems.</p>
+          <ul class="tl-tags"><li>Leadership</li><li>Systems</li><li>Strategy</li></ul>
+        </div>
+      </li>
+
+      <li class="tl-item" data-reveal>
+        <span class="tl-node" aria-hidden="true"></span>
+        <div class="tl-card" data-tilt data-tilt-strength="6">
+          <time class="tl-year">2020 — 2022</time>
+          <span class="tl-index" aria-hidden="true">03</span>
+          <h3>Senior Product Designer</h3>
+          <p>Created design systems and category-defining products for technology teams.</p>
+          <ul class="tl-tags"><li>Design Systems</li><li>SaaS</li><li>Research</li></ul>
+        </div>
+      </li>
+
+      <li class="tl-item" data-reveal>
+        <span class="tl-node" aria-hidden="true"></span>
+        <div class="tl-card" data-tilt data-tilt-strength="6">
+          <time class="tl-year">2018 — 2020</time>
+          <span class="tl-index" aria-hidden="true">04</span>
+          <h3>Designer &amp; Developer</h3>
+          <p>Built a foundation in identity, interaction and expressive front-end craft.</p>
+          <ul class="tl-tags"><li>Identity</li><li>Front-end</li><li>Interaction</li></ul>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ SERVICES ============ -->
+  <section class="section services" id="services" aria-labelledby="services-title">
+    <p class="section-label" data-reveal><span>06</span> Services</p>
+    <h2 id="services-title" class="display display-sm" data-split>What I can <em>build with you.</em></h2>
+
+    <ul class="service-grid">
+      <li class="service-card" data-reveal data-tilt data-tilt-strength="12">
+        <span class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M30 6 8 28l-2 14 14-2L42 18 30 6Z" /><path d="m26 10 12 12M18 40 8 30" /><path d="m20 26 4 4" /></svg>
+        </span>
+        <h3>Creative Design</h3>
+        <p>Art direction and visual systems that carry one idea across every surface.</p>
+        <span class="service-num" aria-hidden="true">01</span>
+      </li>
+
+      <li class="service-card" data-reveal data-delay="0.06" data-tilt data-tilt-strength="12">
+        <span class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M24 8 8 17l16 9 16-9-16-9Z" /><path d="M8 26l16 9 16-9M8 33l16 9 16-9" /></svg>
+        </span>
+        <h3>UI/UX</h3>
+        <p>Interfaces researched, structured and detailed until they feel obvious.</p>
+        <span class="service-num" aria-hidden="true">02</span>
+      </li>
+
+      <li class="service-card" data-reveal data-delay="0.12" data-tilt data-tilt-strength="12">
+        <span class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="9" /><path d="M24 4v10M24 34v10M4 24h10M34 24h10M10 10l7 7M31 31l7 7M38 10l-7 7M17 31l-7 7" /></svg>
+        </span>
+        <h3>Brand Identity</h3>
+        <p>Names, marks and systems built to stay recognizable as you scale.</p>
+        <span class="service-num" aria-hidden="true">03</span>
+      </li>
+
+      <li class="service-card" data-reveal data-delay="0.18" data-tilt data-tilt-strength="12">
+        <span class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M17 15 6 24l11 9M31 15l11 9-11 9M27 10 21 38" /></svg>
+        </span>
+        <h3>Web Development</h3>
+        <p>Fast, accessible front-ends where the build honours the design.</p>
+        <span class="service-num" aria-hidden="true">04</span>
+      </li>
+
+      <li class="service-card" data-reveal data-delay="0.24" data-tilt data-tilt-strength="12">
+        <span class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M24 7 9 15.5v17L24 41l15-8.5v-17L24 7Z" /><path d="M9 15.5 24 24l15-8.5M24 24v17" /><circle cx="24" cy="24" r="3.5" /></svg>
+        </span>
+        <h3>3D &amp; Motion</h3>
+        <p>Dimensional storytelling — real-time scenes, film and interface motion.</p>
+        <span class="service-num" aria-hidden="true">05</span>
+      </li>
+
+      <li class="service-card" data-reveal data-delay="0.3" data-tilt data-tilt-strength="12">
+        <span class="service-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="12" /><ellipse cx="24" cy="24" rx="19" ry="7.5" /><circle cx="24" cy="24" r="3" /></svg>
+        </span>
+        <h3>Digital Experiences</h3>
+        <p>Launches, showrooms and installations built to be remembered.</p>
+        <span class="service-num" aria-hidden="true">06</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title">
+    <p class="section-label" data-reveal><span>07</span> Kind words</p>
+    <h2 id="testimonials-title" class="display display-sm center" data-split>Trusted by <em>builders.</em></h2>
+
+    <div class="carousel" id="carousel" aria-roledescription="carousel" aria-label="Client testimonials">
+      <ul class="carousel-track" id="carousel-track">
+        <li class="quote-card" data-quote>
+          <blockquote>
+            <p>“The work didn’t just look exceptional — it changed how our team thought about the product.”</p>
+            <footer><cite>Sarah Chen</cite><span>Founder, Northstar</span></footer>
+          </blockquote>
+        </li>
+        <li class="quote-card" data-quote>
+          <blockquote>
+            <p>“A rare mix of imagination, taste and technical command. Every detail had a reason.”</p>
+            <footer><cite>Marcus Hale</cite><span>Creative Director</span></footer>
+          </blockquote>
+        </li>
+        <li class="quote-card" data-quote>
+          <blockquote>
+            <p>“Our new identity finally feels like the company we’ve been becoming for years.”</p>
+            <footer><cite>Amelia Ross</cite><span>CEO, Aster House</span></footer>
+          </blockquote>
+        </li>
+      </ul>
+
+      <div class="carousel-controls">
+        <button class="round-btn" id="quote-prev" aria-label="Previous testimonial" data-magnetic>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg>
+        </button>
+        <div class="carousel-dots" id="carousel-dots" role="tablist" aria-label="Choose testimonial"></div>
+        <button class="round-btn" id="quote-next" aria-label="Next testimonial" data-magnetic>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section contact" id="contact" aria-labelledby="contact-title">
+    <canvas class="contact-canvas" id="contact-canvas" aria-hidden="true"></canvas>
+
+    <div class="contact-inner">
+      <p class="section-label" data-reveal><span>08</span> Contact</p>
+      <h2 id="contact-title" class="display center" data-split>Let’s create something<br /><em>unforgettable.</em></h2>
+
+      <div class="contact-grid">
+        <form class="contact-form" id="contact-form" novalidate>
+          <div class="field">
+            <label for="field-name">Your name</label>
+            <input id="field-name" name="name" type="text" autocomplete="name" required placeholder="How should I call you?" aria-describedby="err-name" />
+            <p class="field-error" id="err-name" role="alert"></p>
+          </div>
+
+          <div class="field">
+            <label for="field-email">Email address</label>
+            <input id="field-email" name="email" type="email" autocomplete="email" required placeholder="you@company.com" aria-describedby="err-email" />
+            <p class="field-error" id="err-email" role="alert"></p>
+          </div>
+
+          <div class="field">
+            <label for="field-details">Project details</label>
+            <textarea id="field-details" name="details" rows="4" required placeholder="The vision, the timeline, and what success looks like…" aria-describedby="err-details"></textarea>
+            <p class="field-error" id="err-details" role="alert"></p>
+          </div>
+
+          <button class="btn btn-primary btn-send" type="submit" data-magnetic>
+            <span>Send inquiry</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+          </button>
+
+          <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+
+        <aside class="contact-side" data-reveal data-delay="0.15">
+          <p class="contact-note">Prefer email? Reach me directly — I answer every serious inquiry within two working days.</p>
+          <a class="contact-mail" href="mailto:hello@novaweaver.studio" data-magnetic>hello@novaweaver.studio</a>
+
+          <ul class="socials">
+            <li><a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" data-magnetic>LinkedIn <span aria-hidden="true">↗</span></a></li>
+            <li><a href="https://dribbble.com/" target="_blank" rel="noopener noreferrer" data-magnetic>Dribbble <span aria-hidden="true">↗</span></a></li>
+            <li><a href="https://www.behance.net/" target="_blank" rel="noopener noreferrer" data-magnetic>Behance <span aria-hidden="true">↗</span></a></li>
+            <li><a href="https://github.com/" target="_blank" rel="noopener noreferrer" data-magnetic>GitHub <span aria-hidden="true">↗</span></a></li>
+          </ul>
+
+          <p class="contact-availability">
+            <span class="pulse" aria-hidden="true"></span>
+            Available for creative projects
+          </p>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>© <span id="year">2026</span> Nova Weaver — Creative Designer &amp; Digital Experience Creator.</p>
+  <button class="to-top" id="to-top" data-magnetic>
+    Back to top <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+  </button>
+</footer>
+
+<!-- ============ CASE STUDY OVERLAY ============ -->
+<div class="case-overlay" id="case-overlay" role="dialog" aria-modal="true" aria-labelledby="case-heading" hidden>
+  <div class="case-backdrop" data-case-close></div>
+  <article class="case-panel" id="case-panel" tabindex="-1">
+    <button class="case-close" id="case-close" aria-label="Close case study" data-magnetic>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+    </button>
+    <div class="case-content" id="case-content">
+      <h2 id="case-heading" class="sr-only">Project case study</h2>
+    </div>
+  </article>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
