@@ -4,7 +4,7 @@
    2.  Base & utilities
    3.  Ambient environment
    4.  Cursor, scroll progress, curtain
-   5.  Navigation
+   5.  Navigation — Apple liquid-glass Dynamic Island
    6.  Buttons
    7.  Hero
    8.  About
@@ -52,7 +52,6 @@
   --shadow-md: 0 24px 60px -32px rgba(70, 47, 128, 0.45);
   --shadow-lg: 0 46px 120px -50px rgba(70, 47, 128, 0.55);
   --holo: linear-gradient(115deg, #C8B6FF 0%, #E6DCFF 22%, #FFFFFF 38%, #D9F0FF 52%, #C8B6FF 68%, #F0E7FF 84%, #B89CFF 100%);
-  /* the same shimmer, weighted dark enough to read as text */
   --holo-text: linear-gradient(115deg, #6C4AB6 0%, #B89CFF 24%, #8A6AD0 42%, #C8B6FF 58%, #6C4AB6 78%, #9A7FE0 100%);
 
   /* type */
@@ -79,11 +78,11 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-glass: cubic-bezier(0.32, 0.72, 0, 1);
 
   --nav-h: 76px;
 }
 
-/* registered so the card's flip can be transitioned rather than snapped */
 @property --flip {
   syntax: "<angle>";
   inherits: false;
@@ -169,7 +168,6 @@ ul, ol { list-style: none; padding: 0; }
 }
 .skip-link:focus-visible { transform: translateY(0); }
 
-/* display type ------------------------------------------------- */
 .display {
   font-family: var(--font-display);
   font-size: var(--step-4);
@@ -458,37 +456,169 @@ kbd {
 }
 
 /* ---------------------------------------------------------------
-   5. NAVIGATION
+   5. NAVIGATION — Apple liquid-glass Dynamic Island
+   Default state = EXPANDED.  `.is-collapsed` shrinks it to a pill.
    --------------------------------------------------------------- */
 .nav-shell {
   position: fixed;
-  top: 18px;
+  top: 16px;
   left: 50%;
   z-index: 120;
-  width: min(1280px, calc(100% - 2 * var(--gutter)));
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.6rem 0.65rem 0.6rem 1.1rem;
+  justify-content: center;
+
+  /* ── Default: fully expanded ── */
+  height: 62px;
+  width: min(1280px, calc(100vw - 2 * var(--gutter)));
+  padding: 0 0.65rem 0 1.1rem;
   border-radius: 999px;
-  border: 1px solid var(--glass-line);
-  background: rgba(255, 255, 255, 0.46);
-  backdrop-filter: blur(var(--blur)) saturate(160%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
-  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.85);
-  transition: transform 0.6s var(--ease-out), box-shadow 0.4s ease, background 0.4s ease, opacity 0.4s ease;
+  overflow: hidden;
+  isolation: isolate;
+
+  /* Apple liquid glass — nearly invisible tint + heavy refraction blur */
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(34px) saturate(200%) brightness(1.09) contrast(1.02);
+  -webkit-backdrop-filter: blur(34px) saturate(200%) brightness(1.09) contrast(1.02);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+
+  box-shadow:
+    0 28px 80px -26px rgba(70, 47, 128, 0.26),
+    0 6px 20px -8px rgba(70, 47, 128, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+    inset 1px 0 0 rgba(255, 255, 255, 0.5),
+    inset -1px 0 0 rgba(255, 255, 255, 0.5);
+
+  transition:
+    width 0.85s var(--ease-glass),
+    height 0.7s var(--ease-glass),
+    padding 0.85s var(--ease-glass),
+    background 0.7s var(--ease-glass),
+    box-shadow 0.7s var(--ease-glass),
+    border-color 0.7s var(--ease-glass),
+    top 0.7s var(--ease-glass);
+
+  will-change: width, padding;
 }
-.nav-shell.is-hidden { transform: translate(-50%, calc(-100% - 28px)); }
-.nav-shell.is-stuck {
-  background: rgba(255, 255, 255, 0.66);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.9);
+
+/* Collapsed pill */
+.nav-shell.is-collapsed {
+  height: 54px;
+  width: 112px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 20px 60px -22px rgba(70, 47, 128, 0.22),
+    0 3px 14px -6px rgba(70, 47, 128, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16),
+    inset 1px 0 0 rgba(255, 255, 255, 0.4),
+    inset -1px 0 0 rgba(255, 255, 255, 0.4);
+}
+
+/* prismatic refraction layer (Apple signature edge-light) */
+.island-glass {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(120% 150% at 15% -20%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 42%),
+    radial-gradient(90% 120% at 88% 115%, rgba(200, 182, 255, 0.3) 0%, rgba(200, 182, 255, 0) 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 45%, rgba(255, 255, 255, 0.07) 100%);
+  opacity: 1;
+  transition: opacity 0.8s var(--ease-glass);
+}
+.nav-shell.is-collapsed .island-glass { opacity: 0.35; }
+
+/* animated specular sweep */
+.island-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.52) 46%,
+    rgba(255, 255, 255, 0.06) 54%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  background-position: 150% 0;
+  opacity: 0.85;
+  mix-blend-mode: screen;
+  animation: island-sheen 5s ease infinite;
+  transition: opacity 0.6s ease;
+}
+.nav-shell.is-collapsed .island-sheen { opacity: 0.45; }
+
+@keyframes island-sheen {
+  0%   { background-position: 150% 0; }
+  100% { background-position: -80% 0; }
+}
+
+/* centred mark visible only when collapsed */
+.island-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  background: var(--holo);
+  background-size: 220% 100%;
+  color: var(--violet-deep);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.75),
+    0 6px 18px -8px rgba(108, 74, 182, 0.65);
+  animation: holo-pan 8s linear infinite;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.45s var(--ease-glass);
+}
+.nav-shell.is-collapsed .island-mark {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity 0.35s ease 0.22s, transform 0.55s var(--ease-glass) 0.18s;
+}
+
+/* full nav row */
+.island-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.45s ease 0.22s;
+}
+.nav-shell.is-collapsed .island-row {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
+  flex-shrink: 0;
   font-family: var(--font-display);
   font-weight: 500;
   letter-spacing: -0.03em;
@@ -496,14 +626,15 @@ kbd {
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 34px; height: 34px;
+  width: 34px;
+  height: 34px;
   border-radius: 12px;
   background: var(--holo);
   background-size: 220% 100%;
   color: var(--violet-deep);
   font-size: 0.74rem;
   letter-spacing: 0.02em;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), 0 6px 18px -8px rgba(108,74,182,0.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7), 0 6px 18px -8px rgba(108, 74, 182, 0.6);
   animation: holo-pan 8s linear infinite;
 }
 .brand-text { font-size: 0.98rem; white-space: nowrap; }
@@ -513,7 +644,12 @@ kbd {
   color: var(--violet);
 }
 
-.nav { margin-inline: auto; }
+.nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
 .nav-list {
   position: relative;
   display: flex;
@@ -540,8 +676,11 @@ kbd {
   top: 0; left: 0;
   height: 100%;
   border-radius: 999px;
-  background: rgba(255,255,255,0.9);
-  box-shadow: 0 6px 20px -12px rgba(70,47,128,0.8), inset 0 0 0 1px rgba(200,182,255,0.55);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 6px 20px -12px rgba(70, 47, 128, 0.7),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
   opacity: 0;
   transform: translateX(0);
   transition: transform 0.55s var(--ease-elastic), width 0.55s var(--ease-elastic), opacity 0.3s ease;
@@ -551,10 +690,13 @@ kbd {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
+  flex-shrink: 0;
   padding: 0.45rem 0.95rem;
   border-radius: 999px;
-  border: 1px solid var(--edge-soft);
-  background: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   font-size: 0.74rem;
   letter-spacing: 0.04em;
   color: var(--ink-soft);
@@ -569,17 +711,18 @@ kbd {
   animation: pulse 2.4s var(--ease-soft) infinite;
 }
 @keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(78,214,164,0.55); }
-  70%  { box-shadow: 0 0 0 9px rgba(78,214,164,0); }
-  100% { box-shadow: 0 0 0 0 rgba(78,214,164,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(78, 214, 164, 0.55); }
+  70%  { box-shadow: 0 0 0 9px rgba(78, 214, 164, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(78, 214, 164, 0); }
 }
 
 .menu-toggle {
   display: none;
+  flex-shrink: 0;
   width: 42px; height: 42px;
   border-radius: 50%;
-  border: 1px solid var(--edge-soft);
-  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.35);
   position: relative;
 }
 .menu-toggle span {
@@ -884,8 +1027,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   place-items: center;
   min-height: min(560px, 74vw);
   perspective: 1200px;
-  /* the spinning rings are square boxes: clip so their rotated bounds
-     never widen the page */
   overflow: hidden;
   border-radius: var(--radius-xl);
   will-change: transform;
@@ -1035,8 +1176,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   animation-direction: reverse;
 }
 
-/* the tilt vars live inside the keyframes so pointer tilt and the idle
-   float can share one transform without overwriting each other */
 @keyframes float-card {
   from {
     transform: translateY(-10px)
@@ -1483,7 +1622,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 0;
-  /* zero width while collapsed, otherwise it sets the pill's width */
   width: 0;
   min-width: 0;
   max-height: 0;
@@ -1748,8 +1886,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   position: relative;
   margin-top: clamp(2.5rem, 6vw, 4rem);
   perspective: 1400px;
-  /* the neighbouring cards translate past the section edge; clip across,
-     keep the vertical shadows visible */
   overflow-x: clip;
   overflow-y: visible;
 }
@@ -2044,7 +2180,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
     opacity 0.7s ease var(--wd, 0s);
   will-change: transform;
 }
-/* words are separated by real whitespace so lines can still break */
 [data-split].is-visible .word { transform: none; opacity: 1; }
 
 /* ---------------------------------------------------------------
@@ -2066,6 +2201,49 @@ body.webgl-ready .hero-fallback { opacity: 0; }
 @media (max-width: 860px) {
   :root { --nav-h: 66px; }
 
+  /* Mobile: turn the island into a plain top bar (no collapse behaviour) */
+  .nav-shell,
+  .nav-shell.is-collapsed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    padding: 0.6rem var(--gutter);
+    border-radius: 0;
+    transform: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(252, 251, 255, 0.92);
+    border: none;
+    border-bottom: 1px solid rgba(108, 74, 182, 0.08);
+    box-shadow: 0 4px 20px -8px rgba(70, 47, 128, 0.12);
+    overflow: visible;
+    display: block;
+    transition: none;
+    will-change: auto;
+  }
+
+  .island-glass,
+  .island-sheen,
+  .island-mark {
+    display: none !important;
+  }
+
+  .island-row,
+  .nav-shell.is-collapsed .island-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    opacity: 1;
+    pointer-events: auto;
+    transition: none;
+  }
+
+  .brand { flex-shrink: 0; }
+
   .menu-toggle { display: block; margin-left: auto; }
 
   .nav {
@@ -2074,12 +2252,16 @@ body.webgl-ready .hero-fallback { opacity: 0; }
     margin: 0;
     display: grid;
     place-items: center;
-    background: rgba(250, 248, 255, 0.92);
+    background: rgba(250, 248, 255, 0.94);
     backdrop-filter: blur(26px);
     -webkit-backdrop-filter: blur(26px);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.45s var(--ease-out), visibility 0.45s;
+    z-index: 200;
+    flex: none;
+    justify-content: initial;
+    min-width: 0;
   }
   body.menu-open .nav { opacity: 1; visibility: visible; }
 
@@ -2199,6 +2381,7 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   .profile-card, .skill, .float-word, .about-ring { animation: none !important; }
   .project-card { transform: none !important; opacity: 1 !important; }
   .quote-card { transition: none; }
+  .nav-shell { transition: none; }
 }
 
 @media print {

@@ -8,7 +8,7 @@
    4.  Cursor & magnetic elements
    5.  Tilt
    6.  Reveal & split-text
-   7.  Navigation
+   7.  Navigation (Dynamic Island: open by default, close on scroll)
    8.  Scroll progress & parallax
    9.  Counters
    10. Work gallery
@@ -36,7 +36,7 @@
     reduced: motionQuery.matches,
     coarse: coarseQuery.matches,
     narrow: narrowQuery.matches,
-    pointer: { x: 0.5, y: 0.5 },      // normalised 0..1
+    pointer: { x: 0.5, y: 0.5 },
     pointerPx: { x: 0, y: 0 },
     scrollY: window.scrollY || 0
   };
@@ -57,7 +57,6 @@
   function clamp(value, min, max) { return value < min ? min : value > max ? max : value; }
   function lerp(a, b, t) { return a + (b - a) * t; }
 
-  /** rAF-throttled wrapper so scroll/pointer handlers never stack up. */
   function throttleFrame(fn) {
     var queued = false;
     var lastArgs;
@@ -76,7 +75,6 @@
 
   /* -------------------------------------------------------------
      2. SHARED ANIMATION LOOP
-     One rAF for the whole page — cheaper and always in sync.
      ------------------------------------------------------------- */
   var tickers = [];
   var looping = false;
@@ -109,7 +107,6 @@
     if (!doc.hidden) { lastTime = 0; startLoop(); }
   });
 
-  /* pointer tracking (one listener for everything that needs it) */
   window.addEventListener("pointermove", function (e) {
     state.pointerPx.x = e.clientX;
     state.pointerPx.y = e.clientY;
@@ -147,14 +144,12 @@
         el.classList.add("is-done");
         body.classList.remove("is-loading");
         body.classList.add("is-ready");
-        // first reveals fire once the curtain is out of the way
         window.setTimeout(function () { revealInView(); }, 60);
       }, prefersStillness() ? 0 : 320);
     }
 
     if (doc.readyState === "complete") window.setTimeout(finish, 260);
     else window.addEventListener("load", function () { window.setTimeout(finish, 260); });
-    // hard safety net: never trap the page behind the curtain
     window.setTimeout(finish, 4200);
   })();
 
@@ -235,7 +230,7 @@
   })();
 
   /* -------------------------------------------------------------
-     5. TILT  — writes --rx/--ry so CSS keeps ownership of transforms
+     5. TILT
      ------------------------------------------------------------- */
   (function tilt() {
     if (state.coarse || prefersStillness()) return;
@@ -304,12 +299,10 @@
       } else if (node.nodeName === "BR") {
         pieces.push({ br: true, node: node.cloneNode() });
       } else {
-        // keep the gradient <em> intact: the wrapper moves, the element paints
         pieces.push({ space: false, node: node.cloneNode(true) });
       }
     });
 
-    // source indentation must not become a visible leading/trailing gap
     while (pieces.length && pieces[0].space) pieces.shift();
     while (pieces.length && pieces[pieces.length - 1].space) pieces.pop();
 
@@ -317,11 +310,8 @@
     pieces.forEach(function (piece, i) {
       if (piece.br) { fragment.appendChild(piece.node); return; }
       if (piece.space) {
-        // a break already ends the line: no spacer needed around it
         if (pieces[i - 1] && pieces[i - 1].br) return;
         if (pieces[i + 1] && pieces[i + 1].br) return;
-        // a real space, not a span: inline-block words only wrap where
-        // there is actual whitespace between them
         fragment.appendChild(doc.createTextNode(" "));
         return;
       }
@@ -359,7 +349,6 @@
     revealTargets.forEach(show);
   }
 
-  /** Anything already on screen when the curtain lifts. */
   function revealInView() {
     revealTargets.forEach(function (el) {
       if (el.classList.contains("is-visible")) return;
@@ -395,7 +384,16 @@
   })();
 
   /* -------------------------------------------------------------
-     7. NAVIGATION
+     7. NAVIGATION — Apple liquid-glass Dynamic Island
+
+     Behaviour:
+       • Starts EXPANDED on first load (full width).
+       • Collapses to a small pill once the user scrolls down past
+         SCROLL_TRIGGER pixels.
+       • Re-expands when the user hovers the pill (or on focus),
+         OR when they scroll back near the top.
+       • Collapses again when the pointer leaves and the page is
+         still scrolled.
      ------------------------------------------------------------- */
   (function navigation() {
     var shell = $("#nav");
@@ -404,6 +402,9 @@
     var links = $$(".nav-link");
     var indicator = $(".nav-indicator");
     if (!shell || !list) return;
+
+    var SCROLL_TRIGGER = 60;   // px — scrolled past this = collapsed
+    var RE_OPEN_AT     = 30;   // px — near top = always expanded
 
     /* --- mobile drawer --- */
     function setMenu(open) {
@@ -480,25 +481,67 @@
       sections.forEach(function (section) { sectionObserver.observe(section); });
     }
 
-    /* --- hide on scroll down, show on scroll up --- */
-    var last = window.scrollY;
+    /* --- Dynamic Island behaviour --- */
+    function isDesktop() {
+      return !state.narrow;
+    }
+
+    function expandIsland() {
+      shell.classList.remove("is-collapsed");
+      // realign the sliding indicator after the pill grows
+      window.setTimeout(function () { moveIndicator(activeLink()); }, 220);
+    }
+
+    function collapseIsland() {
+      shell.classList.add("is-collapsed");
+    }
+
+    /* header starts OPEN — nothing to do, no `.is-collapsed` class present */
+
+    /* Collapse on scroll down, expand again at the top */
     window.addEventListener("scroll", throttleFrame(function () {
+      if (!isDesktop()) return;
       var y = window.scrollY;
-      shell.classList.toggle("is-stuck", y > 40);
-      if (!body.classList.contains("menu-open")) {
-        var goingDown = y > last && y > 260;
-        shell.classList.toggle("is-hidden", goingDown && Math.abs(y - last) > 4);
+      if (y <= RE_OPEN_AT) {
+        expandIsland();
+      } else if (y > SCROLL_TRIGGER) {
+        // only auto-close if the pointer isn't currently inside the island
+        if (!shell.matches(":hover") && !shell.contains(doc.activeElement)) {
+          collapseIsland();
+        }
       }
-      last = y;
     }), { passive: true });
 
+    /* Hover / focus re-opens the island even when scrolled */
+    if (isDesktop()) {
+      shell.addEventListener("pointerenter", function () {
+        if (window.scrollY > RE_OPEN_AT) expandIsland();
+      });
+
+      shell.addEventListener("pointerleave", function () {
+        // Collapse again if the page is still scrolled down
+        if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
+      });
+
+      shell.addEventListener("focusin", function () {
+        if (window.scrollY > RE_OPEN_AT) expandIsland();
+      });
+
+      shell.addEventListener("focusout", function (e) {
+        if (shell.contains(e.relatedTarget)) return;
+        if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
+      });
+    }
+
+    /* Reset state when the viewport crosses into mobile / desktop */
     window.addEventListener("resize", throttleFrame(function () {
       if (state.narrow) {
-        if (indicator) indicator.style.opacity = "0";
-        if (body.classList.contains("menu-open")) return;
+        // mobile uses the plain bar
+        shell.classList.remove("is-collapsed");
+      } else if (window.scrollY > SCROLL_TRIGGER) {
+        collapseIsland();
       } else {
-        setMenu(false);
-        moveIndicator(activeLink());
+        expandIsland();
       }
     }));
 
@@ -516,7 +559,6 @@
           behavior: prefersStillness() ? "auto" : "smooth",
           block: "start"
         });
-        // keep keyboard focus with the visual jump
         target.setAttribute("tabindex", "-1");
         window.setTimeout(function () { target.focus({ preventScroll: true }); }, 520);
       });
@@ -658,7 +700,6 @@
       else if (e.key === "End") { e.preventDefault(); goTo(cards.length - 1); }
     });
 
-    /* --- drag to travel --- */
     var dragging = false;
     var moved = 0;
     var startX = 0;
@@ -666,7 +707,7 @@
     var pointerId = null;
 
     rail.addEventListener("pointerdown", function (e) {
-      if (state.coarse) return;                      // native touch scrolling is better
+      if (state.coarse) return;
       if (e.target.closest("button, a")) return;
       dragging = true;
       moved = 0;
@@ -703,14 +744,13 @@
       if (moved > 8) { e.preventDefault(); e.stopPropagation(); }
     }, true);
 
-    /* --- vertical wheel travels the gallery, and hands the page back at the ends --- */
     rail.addEventListener("wheel", function (e) {
       if (state.coarse || e.ctrlKey) return;
       if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
       var scrollable = rail.scrollWidth - rail.clientWidth;
       var atStart = rail.scrollLeft <= 1;
       var atEnd = rail.scrollLeft >= scrollable - 1;
-      if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return; // release the page
+      if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return;
       e.preventDefault();
       rail.scrollLeft += e.deltaY;
     }, { passive: false });
@@ -743,7 +783,6 @@
 
       lastFocus = doc.activeElement;
 
-      // wipe previous content but keep the accessible heading node
       while (content.firstChild) content.removeChild(content.firstChild);
       if (heading) {
         var title = $(".project-title", project);
@@ -754,7 +793,6 @@
 
       overlay.hidden = false;
       body.classList.add("no-scroll");
-      // next frame so the transition has a starting state to animate from
       requestAnimationFrame(function () {
         requestAnimationFrame(function () { overlay.classList.add("is-open"); });
       });
@@ -865,7 +903,6 @@
         skill.classList.remove("is-active");
         light(skill, false);
       });
-      // tap on touch: reveal the description instead of chasing a hover state
       skill.addEventListener("click", function () {
         skills.forEach(function (other) {
           if (other !== skill) other.classList.remove("is-active");
@@ -981,7 +1018,6 @@
     });
     root.addEventListener("pointerleave", restart);
 
-    /* swipe */
     var startX = null;
     root.addEventListener("pointerdown", function (e) { startX = e.clientX; });
     root.addEventListener("pointerup", function (e) {
@@ -1075,7 +1111,6 @@
         status.textContent = "Sending your message…";
       }
 
-      // No backend in a static site: hand the message to the visitor's mail client.
       window.setTimeout(function () {
         var data = new FormData(form);
         var subject = encodeURIComponent("New project inquiry from " + (data.get("name") || ""));
@@ -1102,13 +1137,12 @@
   })();
 
   /* -------------------------------------------------------------
-     16. WEBGL SCENES
+     16. WEBGL SCENES (Three.js)
      ------------------------------------------------------------- */
   (function webgl() {
     if (typeof window.THREE === "undefined") return;
     var THREE = window.THREE;
 
-    /** Soft lavender studio environment, generated rather than downloaded. */
     function makeEnvironment(renderer) {
       var canvas = doc.createElement("canvas");
       canvas.width = 512;
@@ -1123,7 +1157,6 @@
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, 512, 256);
 
-      // two soft key lights for believable highlights on the glass
       function blot(x, y, r, colour) {
         var glow = ctx.createRadialGradient(x, y, 0, x, y, r);
         glow.addColorStop(0, colour);
@@ -1147,7 +1180,6 @@
       return env;
     }
 
-    /** Round soft sprite for particle systems. */
     function makeSprite() {
       var canvas = doc.createElement("canvas");
       canvas.width = canvas.height = 64;
@@ -1184,7 +1216,6 @@
       return renderer;
     }
 
-    /** Keeps a renderer sized to its canvas' CSS box. */
     function fit(renderer, camera, canvas) {
       var width = canvas.clientWidth || 1;
       var height = canvas.clientHeight || 1;
@@ -1193,7 +1224,6 @@
       camera.updateProjectionMatrix();
     }
 
-    /** Render only while the canvas is on screen. */
     function whenVisible(canvas, onChange) {
       if (!("IntersectionObserver" in window)) { onChange(true); return; }
       var observer = new IntersectionObserver(function (entries) {
@@ -1222,7 +1252,6 @@
       var world = new THREE.Group();
       scene.add(world);
 
-      /* backdrop gives the glass something to refract */
       var backdropCanvas = doc.createElement("canvas");
       backdropCanvas.width = backdropCanvas.height = 256;
       var bctx = backdropCanvas.getContext("2d");
@@ -1241,7 +1270,6 @@
       backdrop.position.z = -7;
       scene.add(backdrop);
 
-      /* the orb */
       var orbMaterial = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
         metalness: 0,
@@ -1264,7 +1292,6 @@
       var orb = new THREE.Mesh(new THREE.SphereGeometry(1.45, state.coarse ? 48 : 96, state.coarse ? 48 : 96), orbMaterial);
       world.add(orb);
 
-      /* sculptural core seen through the glass */
       var core = new THREE.Mesh(
         new THREE.IcosahedronGeometry(0.62, 0),
         new THREE.MeshPhysicalMaterial({
@@ -1283,7 +1310,6 @@
       );
       world.add(innerShell);
 
-      /* glowing rings */
       var rings = new THREE.Group();
       var ringMaterial = new THREE.MeshStandardMaterial({
         color: 0xc8b6ff,
@@ -1308,7 +1334,6 @@
       });
       world.add(rings);
 
-      /* floating glass shards */
       var shards = new THREE.Group();
       var shardGeometries = [
         new THREE.OctahedronGeometry(0.16, 0),
@@ -1348,7 +1373,6 @@
       }
       world.add(shards);
 
-      /* particle field */
       var particleCount = state.coarse ? 320 : 850;
       var positions = new Float32Array(particleCount * 3);
       var speeds = new Float32Array(particleCount);
@@ -1372,7 +1396,6 @@
       }));
       scene.add(particles);
 
-      /* lighting */
       scene.add(new THREE.HemisphereLight(0xffffff, 0xd9ccff, 0.85));
       var key = new THREE.DirectionalLight(0xffffff, 1.5);
       key.position.set(4, 6, 5);
@@ -1384,7 +1407,6 @@
       cursorLight.position.set(0, 0, 3.4);
       scene.add(cursorLight);
 
-      /* soft contact shadow */
       var shadow = new THREE.Mesh(
         new THREE.PlaneGeometry(6, 6),
         new THREE.MeshBasicMaterial({ map: makeShadowTexture(), transparent: true, opacity: 0.4, depthWrite: false })
@@ -1406,14 +1428,13 @@
         return new THREE.CanvasTexture(c);
       }
 
-      /* interaction state */
       var drag = { active: false, x: 0, y: 0, vx: 0, vy: 0, id: null };
       var aim = { x: 0, y: 0 };
       var eased = { x: 0, y: 0 };
       var heroSection = $(".hero");
 
       function pointerDown(e) {
-        if (e.target.closest && e.target.closest("a, button, input, textarea")) return;
+        if (e.target.closest && e.target.closest("a, button, input, textarea, header")) return;
         drag.active = true;
         drag.id = e.pointerId;
         drag.x = e.clientX;
@@ -1454,13 +1475,11 @@
         if (!visible || doc.hidden) return;
         elapsed += delta;
 
-        /* pointer parallax with easing */
         aim.x = (state.pointer.y - 0.5) * 0.5;
         aim.y = (state.pointer.x - 0.5) * 0.9;
         eased.x = lerp(eased.x, aim.x, 0.035);
         eased.y = lerp(eased.y, aim.y, 0.035);
 
-        /* drag momentum, damped like a heavy object */
         drag.vx *= 0.94;
         drag.vy *= 0.94;
 
@@ -1484,7 +1503,6 @@
           shard.position.y = shard.userData.baseY + Math.sin(elapsed * shard.userData.bob + shard.userData.phase) * 0.22;
         });
 
-        /* particles drift upward and wrap */
         var array = particleGeometry.attributes.position.array;
         for (var i = 0; i < particleCount; i++) {
           array[i * 3 + 1] += speeds[i] * delta;
@@ -1493,11 +1511,9 @@
         particleGeometry.attributes.position.needsUpdate = true;
         particles.rotation.y = elapsed * 0.02;
 
-        /* light follows the cursor through the scene */
         cursorLight.position.x = lerp(cursorLight.position.x, (state.pointer.x - 0.5) * 9, 0.06);
         cursorLight.position.y = lerp(cursorLight.position.y, -(state.pointer.y - 0.5) * 6, 0.06);
 
-        /* gentle camera dolly as the hero leaves */
         var progress = clamp(state.scrollY / Math.max(window.innerHeight, 1), 0, 1);
         camera.position.z = 6.4 + progress * 1.6;
         camera.position.y = progress * 0.7;
@@ -1634,7 +1650,6 @@
     })();
   })();
 
-  /* footer year */
   var year = $("#year");
   if (year) year.textContent = String(new Date().getFullYear());
 })();
