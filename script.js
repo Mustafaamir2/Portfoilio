@@ -1,41 +1,28 @@
 /* =====================================================================
    NOVA WEAVER — interaction layer
-   Plain browser JavaScript. No build step, no framework.
-
-   1.  Environment & helpers
-   2.  Shared animation loop
-   3.  Intro curtain
-   4.  Cursor & magnetic elements
-   5.  Tilt
-   6.  Reveal & split-text
-   7.  Navigation (Dynamic Island: open by default, close on scroll)
-   8.  Scroll progress & parallax
-   9.  Counters
-   10. Work gallery
-   11. Case study overlay
-   12. Skills constellation
-   13. Experience timeline
-   14. Testimonial carousel
-   15. Contact form
-   16. WebGL scenes (Three.js)
+   Responsive-aware. Auto-detects desktop / tablet / mobile and adjusts.
    ===================================================================== */
 (function () {
   "use strict";
 
-  /* -------------------------------------------------------------
-     1. ENVIRONMENT & HELPERS
-     ------------------------------------------------------------- */
   var doc = document;
   var body = doc.body;
 
+  /* ------------------------------------------------------------------
+     Breakpoint queries (kept in sync with CSS)
+     ------------------------------------------------------------------ */
   var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   var coarseQuery = window.matchMedia("(pointer: coarse)");
-  var narrowQuery = window.matchMedia("(max-width: 860px)");
+  var tabletQuery = window.matchMedia("(max-width: 1024px)");
+  var mobileQuery = window.matchMedia("(max-width: 860px)");
+  var smallQuery  = window.matchMedia("(max-width: 640px)");
 
   var state = {
     reduced: motionQuery.matches,
     coarse: coarseQuery.matches,
-    narrow: narrowQuery.matches,
+    tablet: tabletQuery.matches,
+    mobile: mobileQuery.matches,
+    small: smallQuery.matches,
     pointer: { x: 0.5, y: 0.5 },
     pointerPx: { x: 0, y: 0 },
     scrollY: window.scrollY || 0
@@ -48,34 +35,48 @@
 
   onQueryChange(motionQuery, function (e) { state.reduced = e.matches; });
   onQueryChange(coarseQuery, function (e) { state.coarse = e.matches; });
-  onQueryChange(narrowQuery, function (e) { state.narrow = e.matches; });
+  onQueryChange(tabletQuery, function (e) { state.tablet = e.matches; });
+  onQueryChange(mobileQuery, function (e) {
+    state.mobile = e.matches;
+    if (e.matches) closeMenuIfOpen();
+  });
+  onQueryChange(smallQuery, function (e) { state.small = e.matches; });
 
-  function $(selector, scope) { return (scope || doc).querySelector(selector); }
-  function $$(selector, scope) {
-    return Array.prototype.slice.call((scope || doc).querySelectorAll(selector));
+  function closeMenuIfOpen() {
+    body.classList.remove("menu-open");
+    body.classList.remove("no-scroll");
+    var t = document.getElementById("menu-toggle");
+    if (t) {
+      t.setAttribute("aria-expanded", "false");
+      t.setAttribute("aria-label", "Open menu");
+    }
   }
-  function clamp(value, min, max) { return value < min ? min : value > max ? max : value; }
+
+  /* ------------------------------------------------------------------
+     Helpers
+     ------------------------------------------------------------------ */
+  function $(s, scope) { return (scope || doc).querySelector(s); }
+  function $$(s, scope) {
+    return Array.prototype.slice.call((scope || doc).querySelectorAll(s));
+  }
+  function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   function throttleFrame(fn) {
-    var queued = false;
-    var lastArgs;
+    var queued = false, lastArgs;
     return function () {
       lastArgs = arguments;
       if (queued) return;
       queued = true;
-      requestAnimationFrame(function () {
-        queued = false;
-        fn.apply(null, lastArgs);
-      });
+      requestAnimationFrame(function () { queued = false; fn.apply(null, lastArgs); });
     };
   }
 
   function prefersStillness() { return state.reduced; }
 
-  /* -------------------------------------------------------------
-     2. SHARED ANIMATION LOOP
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Shared animation loop
+     ------------------------------------------------------------------ */
   var tickers = [];
   var looping = false;
 
@@ -118,15 +119,14 @@
     state.scrollY = window.scrollY;
   }), { passive: true });
 
-  /* -------------------------------------------------------------
-     3. INTRO CURTAIN
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Intro curtain
+     ------------------------------------------------------------------ */
   (function curtain() {
     var el = $("#curtain");
     if (!el) return;
     var bar = $(".curtain-bar i", el);
-    var progress = 0;
-    var done = false;
+    var progress = 0, done = false;
 
     function step() {
       if (done) return;
@@ -144,7 +144,7 @@
         el.classList.add("is-done");
         body.classList.remove("is-loading");
         body.classList.add("is-ready");
-        window.setTimeout(function () { revealInView(); }, 60);
+        window.setTimeout(revealInView, 60);
       }, prefersStillness() ? 0 : 320);
     }
 
@@ -153,12 +153,15 @@
     window.setTimeout(finish, 4200);
   })();
 
-  /* -------------------------------------------------------------
-     4. CURSOR & MAGNETIC ELEMENTS
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Cursor (desktop only)
+     ------------------------------------------------------------------ */
   (function cursor() {
     var el = $(".cursor");
-    if (!el || state.coarse || prefersStillness()) { if (el) el.remove(); return; }
+    if (!el || state.coarse || state.mobile || prefersStillness()) {
+      if (el) el.remove();
+      return;
+    }
 
     var dot = $(".cursor-dot", el);
     var halo = $(".cursor-halo", el);
@@ -177,12 +180,12 @@
       el.classList.remove("is-live");
     });
 
-    var hoverSelector = 'a, button, [data-magnetic], .skill, .project-card, input, textarea';
+    var hoverSel = 'a, button, [data-magnetic], .skill, .project-card, input, textarea';
     doc.addEventListener("pointerover", function (e) {
-      if (e.target.closest && e.target.closest(hoverSelector)) el.classList.add("is-hover");
+      if (e.target.closest && e.target.closest(hoverSel)) el.classList.add("is-hover");
     });
     doc.addEventListener("pointerout", function (e) {
-      if (e.target.closest && e.target.closest(hoverSelector)) el.classList.remove("is-hover");
+      if (e.target.closest && e.target.closest(hoverSel)) el.classList.remove("is-hover");
     });
 
     addTicker(function () {
@@ -193,13 +196,14 @@
     });
   })();
 
+  /* ------------------------------------------------------------------
+     Magnetic buttons (desktop only)
+     ------------------------------------------------------------------ */
   (function magnetic() {
-    if (state.coarse || prefersStillness()) return;
+    if (state.coarse || state.mobile || prefersStillness()) return;
 
     $$("[data-magnetic]").forEach(function (el) {
-      var target = { x: 0, y: 0 };
-      var current = { x: 0, y: 0 };
-      var stop = null;
+      var target = { x: 0, y: 0 }, current = { x: 0, y: 0 }, stop = null;
       var strength = parseFloat(el.getAttribute("data-magnetic")) || 0.32;
 
       function run() {
@@ -222,24 +226,19 @@
         target.y = (e.clientY - (box.top + box.height / 2)) * strength;
         run();
       });
-      el.addEventListener("pointerleave", function () {
-        target.x = 0;
-        target.y = 0;
-      });
+      el.addEventListener("pointerleave", function () { target.x = 0; target.y = 0; });
     });
   })();
 
-  /* -------------------------------------------------------------
-     5. TILT
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Tilt (desktop only)
+     ------------------------------------------------------------------ */
   (function tilt() {
-    if (state.coarse || prefersStillness()) return;
+    if (state.coarse || state.tablet || prefersStillness()) return;
 
     $$("[data-tilt]").forEach(function (el) {
       var max = parseFloat(el.getAttribute("data-tilt-strength")) || 10;
-      var target = { x: 0, y: 0 };
-      var current = { x: 0, y: 0 };
-      var stop = null;
+      var target = { x: 0, y: 0 }, current = { x: 0, y: 0 }, stop = null;
 
       function run() {
         if (stop) return;
@@ -271,15 +270,14 @@
     });
   })();
 
-  /* -------------------------------------------------------------
-     6. REVEAL & SPLIT TEXT
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Reveal & split text
+     ------------------------------------------------------------------ */
   function splitHeading(el) {
     if (el.dataset.splitDone) return;
     el.dataset.splitDone = "true";
 
-    var index = 0;
-    var pieces = [];
+    var index = 0, pieces = [];
 
     function wrap(node) {
       var span = doc.createElement("span");
@@ -329,10 +327,7 @@
     if (delay) el.style.setProperty("--delay", delay + "s");
   });
 
-  function show(el) {
-    el.classList.add("is-visible");
-    if (el.classList.contains("tl-item")) el.classList.add("is-visible");
-  }
+  function show(el) { el.classList.add("is-visible"); }
 
   var revealObserver = null;
   if ("IntersectionObserver" in window) {
@@ -343,7 +338,6 @@
         revealObserver.unobserve(entry.target);
       });
     }, { rootMargin: "0px 0px -12% 0px", threshold: 0.12 });
-
     revealTargets.forEach(function (el) { revealObserver.observe(el); });
   } else {
     revealTargets.forEach(show);
@@ -360,22 +354,21 @@
     });
   }
 
-  /* -------------------------------------------------------------
-     6b. PROFILE CARD FLIP
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Profile card flip
+     ------------------------------------------------------------------ */
   (function profileCard() {
     var card = $("#profile-card");
     if (!card) return;
 
-    function setFlipped(flipped) {
-      card.classList.toggle("is-flipped", flipped);
-      card.setAttribute("aria-pressed", flipped ? "true" : "false");
+    function setFlipped(f) {
+      card.classList.toggle("is-flipped", f);
+      card.setAttribute("aria-pressed", f ? "true" : "false");
     }
 
     card.addEventListener("click", function () {
       setFlipped(!card.classList.contains("is-flipped"));
     });
-
     card.addEventListener("keydown", function (e) {
       if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
       e.preventDefault();
@@ -383,18 +376,9 @@
     });
   })();
 
-  /* -------------------------------------------------------------
-     7. NAVIGATION — Apple liquid-glass Dynamic Island
-
-     Behaviour:
-       • Starts EXPANDED on first load (full width).
-       • Collapses to a small pill once the user scrolls down past
-         SCROLL_TRIGGER pixels.
-       • Re-expands when the user hovers the pill (or on focus),
-         OR when they scroll back near the top.
-       • Collapses again when the pointer leaves and the page is
-         still scrolled.
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Navigation — Dynamic Island
+     ------------------------------------------------------------------ */
   (function navigation() {
     var shell = $("#nav");
     var list = $("#nav-list");
@@ -403,10 +387,9 @@
     var indicator = $(".nav-indicator");
     if (!shell || !list) return;
 
-    var SCROLL_TRIGGER = 60;   // px — scrolled past this = collapsed
-    var RE_OPEN_AT     = 30;   // px — near top = always expanded
+    var SCROLL_TRIGGER = 60;
+    var RE_OPEN_AT     = 30;
 
-    /* --- mobile drawer --- */
     function setMenu(open) {
       body.classList.toggle("menu-open", open);
       body.classList.toggle("no-scroll", open);
@@ -435,108 +418,85 @@
       }
     });
 
-    /* --- sliding pill indicator --- */
+    /* sliding pill indicator */
     function moveIndicator(link) {
-      if (!indicator || state.narrow || !link) return;
+      if (!indicator || state.mobile || !link) return;
       indicator.style.width = link.offsetWidth + "px";
       indicator.style.transform = "translateX(" + link.parentElement.offsetLeft + "px)";
       indicator.style.opacity = "1";
     }
-
     function activeLink() {
       return links.filter(function (l) { return l.classList.contains("is-active"); })[0];
     }
-
     links.forEach(function (link) {
       link.addEventListener("pointerenter", function () { moveIndicator(link); });
     });
     list.addEventListener("pointerleave", function () { moveIndicator(activeLink()); });
 
-    /* --- active section --- */
+    /* active section */
     var sections = links
-      .map(function (link) { return doc.getElementById(link.getAttribute("data-nav")); })
+      .map(function (l) { return doc.getElementById(l.getAttribute("data-nav")); })
       .filter(Boolean);
 
     function setActive(id) {
-      links.forEach(function (link) {
-        link.classList.toggle("is-active", link.getAttribute("data-nav") === id);
+      links.forEach(function (l) {
+        l.classList.toggle("is-active", l.getAttribute("data-nav") === id);
       });
       moveIndicator(activeLink());
     }
 
     if ("IntersectionObserver" in window && sections.length) {
       var visible = {};
-      var sectionObserver = new IntersectionObserver(function (entries) {
+      var obs = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           visible[entry.target.id] = entry.isIntersecting ? entry.intersectionRatio : 0;
         });
-        var best = null;
-        var bestRatio = 0;
+        var best = null, bestRatio = 0;
         Object.keys(visible).forEach(function (id) {
           if (visible[id] > bestRatio) { bestRatio = visible[id]; best = id; }
         });
         if (best) setActive(best);
       }, { threshold: [0.12, 0.3, 0.6], rootMargin: "-20% 0px -35% 0px" });
-
-      sections.forEach(function (section) { sectionObserver.observe(section); });
+      sections.forEach(function (s) { obs.observe(s); });
     }
 
-    /* --- Dynamic Island behaviour --- */
-    function isDesktop() {
-      return !state.narrow;
-    }
+    /* dynamic island behaviour */
+    function isDesktop() { return !state.mobile; }
 
     function expandIsland() {
       shell.classList.remove("is-collapsed");
-      // realign the sliding indicator after the pill grows
       window.setTimeout(function () { moveIndicator(activeLink()); }, 220);
     }
+    function collapseIsland() { shell.classList.add("is-collapsed"); }
 
-    function collapseIsland() {
-      shell.classList.add("is-collapsed");
-    }
-
-    /* header starts OPEN — nothing to do, no `.is-collapsed` class present */
-
-    /* Collapse on scroll down, expand again at the top */
+    /* Scroll: collapse on down, expand at top */
     window.addEventListener("scroll", throttleFrame(function () {
       if (!isDesktop()) return;
       var y = window.scrollY;
-      if (y <= RE_OPEN_AT) {
-        expandIsland();
-      } else if (y > SCROLL_TRIGGER) {
-        // only auto-close if the pointer isn't currently inside the island
-        if (!shell.matches(":hover") && !shell.contains(doc.activeElement)) {
-          collapseIsland();
-        }
+      if (y <= RE_OPEN_AT) expandIsland();
+      else if (y > SCROLL_TRIGGER) {
+        if (!shell.matches(":hover") && !shell.contains(doc.activeElement)) collapseIsland();
       }
     }), { passive: true });
 
-    /* Hover / focus re-opens the island even when scrolled */
     if (isDesktop()) {
       shell.addEventListener("pointerenter", function () {
         if (window.scrollY > RE_OPEN_AT) expandIsland();
       });
-
       shell.addEventListener("pointerleave", function () {
-        // Collapse again if the page is still scrolled down
         if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
       });
-
       shell.addEventListener("focusin", function () {
         if (window.scrollY > RE_OPEN_AT) expandIsland();
       });
-
       shell.addEventListener("focusout", function (e) {
         if (shell.contains(e.relatedTarget)) return;
         if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
       });
     }
 
-    /* Reset state when the viewport crosses into mobile / desktop */
     window.addEventListener("resize", throttleFrame(function () {
-      if (state.narrow) {
-        // mobile uses the plain bar
+      if (state.mobile) {
         shell.classList.remove("is-collapsed");
       } else if (window.scrollY > SCROLL_TRIGGER) {
         collapseIsland();
@@ -547,7 +507,7 @@
 
     window.setTimeout(function () { moveIndicator(activeLink()); }, 700);
 
-    /* --- smooth scroll for every in-page link --- */
+    /* smooth scrolling */
     $$('a[href^="#"]').forEach(function (link) {
       link.addEventListener("click", function (e) {
         var id = link.getAttribute("href");
@@ -572,9 +532,9 @@
     }
   })();
 
-  /* -------------------------------------------------------------
-     8. SCROLL PROGRESS & PARALLAX
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Scroll progress & parallax
+     ------------------------------------------------------------------ */
   (function scrollFx() {
     var bar = $(".scroll-progress span");
     var parallaxItems = $$("[data-parallax]");
@@ -584,7 +544,7 @@
       var progress = max > 0 ? clamp(window.scrollY / max, 0, 1) : 0;
       if (bar) bar.style.transform = "scaleX(" + progress.toFixed(4) + ")";
 
-      if (!prefersStillness()) {
+      if (!prefersStillness() && !state.mobile) {
         parallaxItems.forEach(function (el) {
           var amount = parseFloat(el.getAttribute("data-parallax")) || 0.05;
           var box = el.getBoundingClientRect();
@@ -593,15 +553,14 @@
         });
       }
     }
-
     window.addEventListener("scroll", throttleFrame(update), { passive: true });
     window.addEventListener("resize", throttleFrame(update));
     update();
   })();
 
-  /* -------------------------------------------------------------
-     9. COUNTERS
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Counters
+     ------------------------------------------------------------------ */
   (function counters() {
     var items = $$("[data-count]");
     if (!items.length) return;
@@ -609,8 +568,7 @@
     function run(el) {
       var target = parseInt(el.getAttribute("data-count"), 10) || 0;
       if (prefersStillness()) { el.textContent = String(target); return; }
-      var started = null;
-      var duration = 1400;
+      var started = null, duration = 1400;
       var stop = addTicker(function (delta, now) {
         if (started === null) started = now;
         var t = clamp((now - started) * 1000 / duration, 0, 1);
@@ -621,19 +579,19 @@
     }
 
     if (!("IntersectionObserver" in window)) { items.forEach(run); return; }
-    var observer = new IntersectionObserver(function (entries) {
+    var obs = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         run(entry.target);
-        observer.unobserve(entry.target);
+        obs.unobserve(entry.target);
       });
     }, { threshold: 0.6 });
-    items.forEach(function (el) { observer.observe(el); });
+    items.forEach(function (el) { obs.observe(el); });
   })();
 
-  /* -------------------------------------------------------------
-     10. WORK GALLERY — horizontal 3D showcase
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Work gallery
+     ------------------------------------------------------------------ */
   (function gallery() {
     var rail = $("#gallery");
     var track = $("#gallery-track");
@@ -649,8 +607,7 @@
       var railBox = rail.getBoundingClientRect();
       var centre = railBox.left + railBox.width / 2;
       var half = railBox.width / 2;
-      var closest = 0;
-      var closestDistance = Infinity;
+      var closest = 0, closestDistance = Infinity;
 
       cards.forEach(function (item, i) {
         var box = item.getBoundingClientRect();
@@ -666,7 +623,6 @@
       });
 
       current = closest;
-
       var scrollable = rail.scrollWidth - rail.clientWidth;
       if (fill) {
         var ratio = scrollable > 0 ? rail.scrollLeft / scrollable : 0;
@@ -674,13 +630,11 @@
         fill.style.width = width + "%";
         fill.style.transform = "translateX(" + (ratio * (100 - width) / width * 100).toFixed(2) + "%)";
       }
-
       if (prev) prev.disabled = rail.scrollLeft <= 2;
       if (next) next.disabled = rail.scrollLeft >= scrollable - 2;
     }
 
-    var onScroll = throttleFrame(perspective);
-    rail.addEventListener("scroll", onScroll, { passive: true });
+    rail.addEventListener("scroll", throttleFrame(perspective), { passive: true });
     window.addEventListener("resize", throttleFrame(perspective));
 
     function goTo(index) {
@@ -700,20 +654,13 @@
       else if (e.key === "End") { e.preventDefault(); goTo(cards.length - 1); }
     });
 
-    var dragging = false;
-    var moved = 0;
-    var startX = 0;
-    var startScroll = 0;
-    var pointerId = null;
+    var dragging = false, moved = 0, startX = 0, startScroll = 0, pointerId = null;
 
     rail.addEventListener("pointerdown", function (e) {
       if (state.coarse) return;
       if (e.target.closest("button, a")) return;
-      dragging = true;
-      moved = 0;
-      pointerId = e.pointerId;
-      startX = e.clientX;
-      startScroll = rail.scrollLeft;
+      dragging = true; moved = 0; pointerId = e.pointerId;
+      startX = e.clientX; startScroll = rail.scrollLeft;
       rail.classList.add("is-dragging");
     });
 
@@ -722,7 +669,7 @@
       var dx = e.clientX - startX;
       moved = Math.abs(dx);
       if (moved > 4 && rail.setPointerCapture) {
-        try { rail.setPointerCapture(pointerId); } catch (err) { /* ignore */ }
+        try { rail.setPointerCapture(pointerId); } catch (err) {}
       }
       rail.scrollLeft = startScroll - dx;
     });
@@ -732,7 +679,7 @@
       dragging = false;
       rail.classList.remove("is-dragging");
       if (pointerId !== null && rail.releasePointerCapture) {
-        try { rail.releasePointerCapture(pointerId); } catch (err) { /* ignore */ }
+        try { rail.releasePointerCapture(pointerId); } catch (err) {}
       }
       pointerId = null;
       if (moved > 30) goTo(current);
@@ -759,9 +706,9 @@
     window.setTimeout(perspective, 400);
   })();
 
-  /* -------------------------------------------------------------
-     11. CASE STUDY OVERLAY
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Case study overlay
+     ------------------------------------------------------------------ */
   (function caseStudy() {
     var overlay = $("#case-overlay");
     var panel = $("#case-panel");
@@ -780,7 +727,6 @@
     function open(project) {
       var template = $("template[data-case]", project);
       if (!template) return;
-
       lastFocus = doc.activeElement;
 
       while (content.firstChild) content.removeChild(content.firstChild);
@@ -826,24 +772,20 @@
       if (overlay.hidden) return;
       if (e.key === "Escape") { e.preventDefault(); close(); return; }
       if (e.key !== "Tab") return;
-
       var items = focusables();
       if (!items.length) { e.preventDefault(); panel.focus(); return; }
-      var first = items[0];
-      var last = items[items.length - 1];
+      var first = items[0], last = items[items.length - 1];
       if (e.shiftKey && (doc.activeElement === first || doc.activeElement === panel)) {
-        e.preventDefault();
-        last.focus();
+        e.preventDefault(); last.focus();
       } else if (!e.shiftKey && doc.activeElement === last) {
-        e.preventDefault();
-        first.focus();
+        e.preventDefault(); first.focus();
       }
     });
   })();
 
-  /* -------------------------------------------------------------
-     12. SKILLS CONSTELLATION
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Skills constellation
+     ------------------------------------------------------------------ */
   (function constellation() {
     var wrap = $("#constellation");
     var svg = $("#constellation-lines");
@@ -855,7 +797,7 @@
     function build() {
       while (svg.firstChild) svg.removeChild(svg.firstChild);
       lines = [];
-      if (state.narrow) return;
+      if (state.mobile) return;
 
       var box = wrap.getBoundingClientRect();
       svg.setAttribute("viewBox", "0 0 " + box.width + " " + box.height);
@@ -904,9 +846,7 @@
         light(skill, false);
       });
       skill.addEventListener("click", function () {
-        skills.forEach(function (other) {
-          if (other !== skill) other.classList.remove("is-active");
-        });
+        skills.forEach(function (o) { if (o !== skill) o.classList.remove("is-active"); });
         skill.classList.toggle("is-active");
       });
     });
@@ -916,14 +856,13 @@
     window.addEventListener("load", build);
   })();
 
-  /* -------------------------------------------------------------
-     13. EXPERIENCE TIMELINE
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Experience timeline
+     ------------------------------------------------------------------ */
   (function timeline() {
     var list = $("#timeline");
     var fill = $("#timeline-fill");
     if (!list || !fill) return;
-
     var items = $$(".tl-item", list);
 
     function update() {
@@ -943,9 +882,9 @@
     update();
   })();
 
-  /* -------------------------------------------------------------
-     14. TESTIMONIAL CAROUSEL
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Testimonial carousel
+     ------------------------------------------------------------------ */
   (function carousel() {
     var root = $("#carousel");
     var track = $("#carousel-track");
@@ -957,9 +896,7 @@
     var cards = $$("[data-quote]", track);
     if (!cards.length) return;
 
-    var index = 0;
-    var timer = null;
-    var dots = [];
+    var index = 0, timer = null, dots = [];
 
     cards.forEach(function (card, i) {
       var dot = doc.createElement("button");
@@ -972,6 +909,7 @@
     });
 
     function render() {
+      var spread = state.small ? 18 : state.mobile ? 24 : state.tablet ? 34 : 48;
       cards.forEach(function (card, i) {
         var offset = i - index;
         var count = cards.length;
@@ -979,15 +917,14 @@
         if (offset < -count / 2) offset += count;
 
         var abs = Math.abs(offset);
-        card.style.setProperty("--tx", (offset * (state.narrow ? 22 : 48)) + "%");
-        card.style.setProperty("--tz", (-abs * 240) + "px");
-        card.style.setProperty("--ry", (offset * -24) + "deg");
+        card.style.setProperty("--tx", (offset * spread) + "%");
+        card.style.setProperty("--tz", (-abs * (state.mobile ? 160 : 240)) + "px");
+        card.style.setProperty("--ry", (offset * (state.mobile ? -16 : -24)) + "deg");
         card.style.setProperty("--sc", String(1 - abs * 0.1));
         card.style.setProperty("--op", String(abs > 1 ? 0 : 1 - abs * 0.74));
         card.style.zIndex = String(10 - abs);
         card.setAttribute("aria-hidden", offset === 0 ? "false" : "true");
       });
-
       dots.forEach(function (dot, i) {
         dot.setAttribute("aria-selected", i === index ? "true" : "false");
       });
@@ -1013,9 +950,7 @@
       if (e.key === "ArrowRight") { e.preventDefault(); go(index + 1, true); }
     });
 
-    root.addEventListener("pointerenter", function () {
-      if (timer) window.clearInterval(timer);
-    });
+    root.addEventListener("pointerenter", function () { if (timer) window.clearInterval(timer); });
     root.addEventListener("pointerleave", restart);
 
     var startX = null;
@@ -1032,30 +967,29 @@
     restart();
   })();
 
-  /* -------------------------------------------------------------
-     15. CONTACT FORM
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     Contact form
+     ------------------------------------------------------------------ */
   (function contactForm() {
     var form = $("#contact-form");
     if (!form) return;
-
     var status = $("#form-status");
     var button = $(".btn-send", form);
 
     var rules = {
-      name: function (value) {
-        if (!value.trim()) return "Please tell me your name.";
-        if (value.trim().length < 2) return "That looks a little short.";
+      name: function (v) {
+        if (!v.trim()) return "Please tell me your name.";
+        if (v.trim().length < 2) return "That looks a little short.";
         return "";
       },
-      email: function (value) {
-        if (!value.trim()) return "An email address lets me reply.";
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim())) return "Please check the email format.";
+      email: function (v) {
+        if (!v.trim()) return "An email address lets me reply.";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim())) return "Please check the email format.";
         return "";
       },
-      details: function (value) {
-        if (!value.trim()) return "A sentence or two about the project is plenty.";
-        if (value.trim().length < 12) return "A little more detail helps me answer properly.";
+      details: function (v) {
+        if (!v.trim()) return "A sentence or two about the project is plenty.";
+        if (v.trim().length < 12) return "A little more detail helps me answer properly.";
         return "";
       }
     };
@@ -1083,9 +1017,7 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var fields = $$("input, textarea", form);
-      var valid = true;
-      var firstInvalid = null;
-
+      var valid = true, firstInvalid = null;
       fields.forEach(function (field) {
         var ok = validateField(field);
         if (!ok && !firstInvalid) firstInvalid = field;
@@ -1136,9 +1068,9 @@
     });
   })();
 
-  /* -------------------------------------------------------------
-     16. WEBGL SCENES (Three.js)
-     ------------------------------------------------------------- */
+  /* ------------------------------------------------------------------
+     WebGL scenes (Three.js) — auto-tuned for mobile performance
+     ------------------------------------------------------------------ */
   (function webgl() {
     if (typeof window.THREE === "undefined") return;
     var THREE = window.THREE;
@@ -1201,14 +1133,13 @@
         renderer = new THREE.WebGLRenderer({
           canvas: canvas,
           alpha: true,
-          antialias: !state.coarse,
+          antialias: !state.coarse && !state.mobile,
           powerPreference: "high-performance"
         });
-      } catch (err) {
-        return null;
-      }
+      } catch (err) { return null; }
       if (!renderer.getContext()) return null;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, state.coarse ? 1.5 : 2));
+      var cap = state.mobile ? 1 : state.coarse ? 1.5 : 2;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cap));
       renderer.setClearAlpha(0);
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1217,37 +1148,34 @@
     }
 
     function fit(renderer, camera, canvas) {
-      var width = canvas.clientWidth || 1;
-      var height = canvas.clientHeight || 1;
-      renderer.setSize(width, height, false);
-      camera.aspect = width / height;
+      var w = canvas.clientWidth || 1;
+      var h = canvas.clientHeight || 1;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
     }
 
     function whenVisible(canvas, onChange) {
       if (!("IntersectionObserver" in window)) { onChange(true); return; }
-      var observer = new IntersectionObserver(function (entries) {
+      var obs = new IntersectionObserver(function (entries) {
         onChange(entries[0].isIntersecting);
       }, { rootMargin: "120px" });
-      observer.observe(canvas);
+      obs.observe(canvas);
     }
 
     var sprite = null;
 
-    /* ---------------- HERO SCENE ---------------- */
+    /* HERO SCENE */
     (function heroScene() {
       var canvas = $("#hero-canvas");
       if (!canvas) return;
-
       var renderer = makeRenderer(canvas);
       if (!renderer) return;
 
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
       camera.position.set(0, 0, 6.4);
-
-      var environment = makeEnvironment(renderer);
-      scene.environment = environment;
+      scene.environment = makeEnvironment(renderer);
 
       var world = new THREE.Group();
       scene.add(world);
@@ -1270,36 +1198,27 @@
       backdrop.position.z = -7;
       scene.add(backdrop);
 
+      var sphereSeg = state.mobile ? 40 : state.coarse ? 48 : 96;
       var orbMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        metalness: 0,
-        roughness: 0.04,
-        transmission: 1,
-        thickness: 1.7,
-        ior: 1.46,
-        clearcoat: 1,
-        clearcoatRoughness: 0.06,
+        color: 0xffffff, metalness: 0, roughness: 0.04,
+        transmission: 1, thickness: 1.7, ior: 1.46,
+        clearcoat: 1, clearcoatRoughness: 0.06,
         attenuationColor: new THREE.Color(0xc8b6ff),
-        attenuationDistance: 2.4,
-        envMapIntensity: 1.15,
-        transparent: true
+        attenuationDistance: 2.4, envMapIntensity: 1.15, transparent: true
       });
       if ("iridescence" in orbMaterial) {
         orbMaterial.iridescence = 0.55;
         orbMaterial.iridescenceIOR = 1.32;
       }
 
-      var orb = new THREE.Mesh(new THREE.SphereGeometry(1.45, state.coarse ? 48 : 96, state.coarse ? 48 : 96), orbMaterial);
+      var orb = new THREE.Mesh(new THREE.SphereGeometry(1.45, sphereSeg, sphereSeg), orbMaterial);
       world.add(orb);
 
       var core = new THREE.Mesh(
         new THREE.IcosahedronGeometry(0.62, 0),
         new THREE.MeshPhysicalMaterial({
-          color: 0x8a67d6,
-          metalness: 0.92,
-          roughness: 0.18,
-          envMapIntensity: 1.4,
-          flatShading: true
+          color: 0x8a67d6, metalness: 0.92, roughness: 0.18,
+          envMapIntensity: 1.4, flatShading: true
         })
       );
       world.add(core);
@@ -1312,21 +1231,17 @@
 
       var rings = new THREE.Group();
       var ringMaterial = new THREE.MeshStandardMaterial({
-        color: 0xc8b6ff,
-        emissive: 0x8a6ad0,
-        emissiveIntensity: 0.55,
-        metalness: 0.9,
-        roughness: 0.22,
-        transparent: true,
-        opacity: 0.9
+        color: 0xc8b6ff, emissive: 0x8a6ad0, emissiveIntensity: 0.55,
+        metalness: 0.9, roughness: 0.22, transparent: true, opacity: 0.9
       });
+      var torusSeg = state.mobile ? 60 : state.coarse ? 96 : 180;
       [
         { r: 2.15, t: 0.012, rx: Math.PI / 2.2, ry: 0.2 },
         { r: 2.55, t: 0.008, rx: Math.PI / 1.7, ry: -0.5 },
         { r: 2.95, t: 0.006, rx: Math.PI / 2.9, ry: 0.9 }
       ].forEach(function (spec) {
         var ring = new THREE.Mesh(
-          new THREE.TorusGeometry(spec.r, spec.t, 8, state.coarse ? 96 : 180),
+          new THREE.TorusGeometry(spec.r, spec.t, 8, torusSeg),
           ringMaterial.clone()
         );
         ring.rotation.set(spec.rx, spec.ry, 0);
@@ -1335,28 +1250,19 @@
       world.add(rings);
 
       var shards = new THREE.Group();
-      var shardGeometries = [
+      var shardGeoms = [
         new THREE.OctahedronGeometry(0.16, 0),
         new THREE.TetrahedronGeometry(0.18, 0),
         new THREE.IcosahedronGeometry(0.14, 0),
         new THREE.TorusGeometry(0.14, 0.04, 8, 28)
       ];
-      var shardMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xe9e1ff,
-        metalness: 0.35,
-        roughness: 0.12,
-        clearcoat: 1,
-        envMapIntensity: 1.5,
-        transparent: true,
-        opacity: 0.92
+      var shardMat = new THREE.MeshPhysicalMaterial({
+        color: 0xe9e1ff, metalness: 0.35, roughness: 0.12,
+        clearcoat: 1, envMapIntensity: 1.5, transparent: true, opacity: 0.92
       });
-
-      var shardCount = state.coarse ? 9 : 16;
+      var shardCount = state.mobile ? 6 : state.coarse ? 9 : 16;
       for (var s = 0; s < shardCount; s++) {
-        var mesh = new THREE.Mesh(
-          shardGeometries[s % shardGeometries.length],
-          shardMaterial.clone()
-        );
+        var mesh = new THREE.Mesh(shardGeoms[s % shardGeoms.length], shardMat.clone());
         var angle = (s / shardCount) * Math.PI * 2 + Math.random() * 0.4;
         var radius = 2.3 + Math.random() * 1.9;
         mesh.position.set(
@@ -1373,7 +1279,7 @@
       }
       world.add(shards);
 
-      var particleCount = state.coarse ? 320 : 850;
+      var particleCount = state.mobile ? 150 : state.coarse ? 320 : 850;
       var positions = new Float32Array(particleCount * 3);
       var speeds = new Float32Array(particleCount);
       for (var p = 0; p < particleCount; p++) {
@@ -1386,13 +1292,8 @@
       particleGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
       sprite = sprite || makeSprite();
       var particles = new THREE.Points(particleGeometry, new THREE.PointsMaterial({
-        size: 0.055,
-        map: sprite,
-        color: 0x9a7fe0,
-        transparent: true,
-        opacity: 0.55,
-        depthWrite: false,
-        sizeAttenuation: true
+        size: 0.055, map: sprite, color: 0x9a7fe0,
+        transparent: true, opacity: 0.55, depthWrite: false, sizeAttenuation: true
       }));
       scene.add(particles);
 
@@ -1407,15 +1308,7 @@
       cursorLight.position.set(0, 0, 3.4);
       scene.add(cursorLight);
 
-      var shadow = new THREE.Mesh(
-        new THREE.PlaneGeometry(6, 6),
-        new THREE.MeshBasicMaterial({ map: makeShadowTexture(), transparent: true, opacity: 0.4, depthWrite: false })
-      );
-      shadow.rotation.x = -Math.PI / 2;
-      shadow.position.y = -2.25;
-      scene.add(shadow);
-
-      function makeShadowTexture() {
+      var shadowTex = (function () {
         var c = doc.createElement("canvas");
         c.width = c.height = 128;
         var x = c.getContext("2d");
@@ -1426,7 +1319,14 @@
         x.fillStyle = g;
         x.fillRect(0, 0, 128, 128);
         return new THREE.CanvasTexture(c);
-      }
+      })();
+      var shadow = new THREE.Mesh(
+        new THREE.PlaneGeometry(6, 6),
+        new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.4, depthWrite: false })
+      );
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.position.y = -2.25;
+      scene.add(shadow);
 
       var drag = { active: false, x: 0, y: 0, vx: 0, vy: 0, id: null };
       var aim = { x: 0, y: 0 };
@@ -1435,17 +1335,14 @@
 
       function pointerDown(e) {
         if (e.target.closest && e.target.closest("a, button, input, textarea, header")) return;
-        drag.active = true;
-        drag.id = e.pointerId;
-        drag.x = e.clientX;
-        drag.y = e.clientY;
+        drag.active = true; drag.id = e.pointerId;
+        drag.x = e.clientX; drag.y = e.clientY;
       }
       function pointerMove(e) {
         if (!drag.active || e.pointerId !== drag.id) return;
         drag.vy += (e.clientX - drag.x) * 0.00035;
         drag.vx += (e.clientY - drag.y) * 0.00028;
-        drag.x = e.clientX;
-        drag.y = e.clientY;
+        drag.x = e.clientX; drag.y = e.clientY;
       }
       function pointerUp() { drag.active = false; drag.id = null; }
 
@@ -1460,8 +1357,7 @@
       window.addEventListener("resize", throttleFrame(function () { fit(renderer, camera, canvas); }));
 
       var visible = true;
-      whenVisible(canvas, function (isVisible) { visible = isVisible; });
-
+      whenVisible(canvas, function (v) { visible = v; });
       body.classList.add("webgl-ready");
 
       if (prefersStillness()) {
@@ -1524,31 +1420,24 @@
       });
     })();
 
-    /* ---------------- CONTACT ORB ---------------- */
+    /* CONTACT ORB */
     (function contactScene() {
       var canvas = $("#contact-canvas");
       if (!canvas) return;
-
       var renderer = makeRenderer(canvas);
       if (!renderer) return;
 
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera(46, 1, 0.1, 60);
       camera.position.set(0, 0, 8);
-
       scene.environment = makeEnvironment(renderer);
 
       var orbMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xd3c2ff,
-        metalness: 0.15,
-        roughness: 0.16,
-        clearcoat: 1,
-        clearcoatRoughness: 0.12,
-        envMapIntensity: 1.25,
-        transparent: true,
-        opacity: 0.72
+        color: 0xd3c2ff, metalness: 0.15, roughness: 0.16,
+        clearcoat: 1, clearcoatRoughness: 0.12,
+        envMapIntensity: 1.25, transparent: true, opacity: 0.72
       });
-      if (!state.coarse) {
+      if (!state.coarse && !state.mobile) {
         orbMaterial.transmission = 0.65;
         orbMaterial.thickness = 3.2;
         orbMaterial.ior = 1.32;
@@ -1556,20 +1445,15 @@
         orbMaterial.attenuationDistance = 4;
       }
 
-      var orb = new THREE.Mesh(
-        new THREE.SphereGeometry(2.7, state.coarse ? 40 : 84, state.coarse ? 40 : 84),
-        orbMaterial
-      );
+      var orbSeg = state.mobile ? 32 : state.coarse ? 40 : 84;
+      var orb = new THREE.Mesh(new THREE.SphereGeometry(2.7, orbSeg, orbSeg), orbMaterial);
       scene.add(orb);
 
       var halo = new THREE.Mesh(
         new THREE.SphereGeometry(3.5, 40, 40),
         new THREE.MeshBasicMaterial({
-          color: 0xc8b6ff,
-          transparent: true,
-          opacity: 0.18,
-          side: THREE.BackSide,
-          depthWrite: false
+          color: 0xc8b6ff, transparent: true, opacity: 0.18,
+          side: THREE.BackSide, depthWrite: false
         })
       );
       scene.add(halo);
@@ -1580,7 +1464,7 @@
       );
       scene.add(lattice);
 
-      var dustCount = state.coarse ? 160 : 420;
+      var dustCount = state.mobile ? 80 : state.coarse ? 160 : 420;
       var dust = new Float32Array(dustCount * 3);
       for (var i = 0; i < dustCount; i++) {
         dust[i * 3] = (Math.random() - 0.5) * 18;
@@ -1591,12 +1475,8 @@
       dustGeometry.setAttribute("position", new THREE.BufferAttribute(dust, 3));
       sprite = sprite || makeSprite();
       var dustPoints = new THREE.Points(dustGeometry, new THREE.PointsMaterial({
-        size: 0.07,
-        map: sprite,
-        color: 0x9a7fe0,
-        transparent: true,
-        opacity: 0.45,
-        depthWrite: false
+        size: 0.07, map: sprite, color: 0x9a7fe0,
+        transparent: true, opacity: 0.45, depthWrite: false
       }));
       scene.add(dustPoints);
 
@@ -1612,9 +1492,9 @@
       window.addEventListener("resize", throttleFrame(function () { fit(renderer, camera, canvas); }));
 
       var visible = false;
-      whenVisible(canvas, function (isVisible) {
-        visible = isVisible;
-        if (isVisible && prefersStillness()) renderer.render(scene, camera);
+      whenVisible(canvas, function (v) {
+        visible = v;
+        if (v && prefersStillness()) renderer.render(scene, camera);
       });
 
       if (prefersStillness()) {
