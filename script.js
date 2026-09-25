@@ -127,7 +127,6 @@
       menuToggleEl.setAttribute("aria-expanded", "true");
       menuToggleEl.setAttribute("aria-label", "Close menu");
     }
-    // Move focus to first link for accessibility
     window.setTimeout(function () {
       if (mobileLinks[0]) mobileLinks[0].focus({ preventScroll: true });
     }, 120);
@@ -161,7 +160,6 @@
     });
   }
 
-  // Close the drawer on any mobile link tap, then smooth-scroll to target
   mobileLinks.forEach(function (link) {
     link.addEventListener("click", function (e) {
       var id = link.getAttribute("href");
@@ -172,7 +170,6 @@
       e.preventDefault();
       closeMenu();
 
-      // Give the close animation a moment, then scroll
       window.setTimeout(function () {
         target.scrollIntoView({
           behavior: prefersStillness() ? "auto" : "smooth",
@@ -186,14 +183,12 @@
     });
   });
 
-  // Close the drawer when clicking outside its inner content
   if (mobileMenuEl) {
     mobileMenuEl.addEventListener("click", function (e) {
       if (e.target === mobileMenuEl) closeMenu();
     });
   }
 
-  // Escape closes the drawer
   doc.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && body.classList.contains("menu-open")) {
       closeMenu();
@@ -201,7 +196,6 @@
     }
   });
 
-  // Auto-close when resizing up to desktop
   window.addEventListener("resize", throttleFrame(function () {
     if (!state.mobile && body.classList.contains("menu-open")) closeMenu();
   }));
@@ -465,7 +459,6 @@
 
   /* ------------------------------------------------------------------
      Desktop navigation — Dynamic Island behaviour
-     (mobile handled by the separate overlay above)
      ------------------------------------------------------------------ */
   (function navigation() {
     var shell = $("#nav");
@@ -477,7 +470,6 @@
     var SCROLL_TRIGGER = 60;
     var RE_OPEN_AT     = 30;
 
-    /* sliding pill indicator (desktop only) */
     function moveIndicator(link) {
       if (!indicator || state.mobile || !link) return;
       indicator.style.width = link.offsetWidth + "px";
@@ -492,7 +484,6 @@
     });
     list.addEventListener("pointerleave", function () { moveIndicator(activeLink()); });
 
-    /* active section */
     var sections = links
       .map(function (l) { return doc.getElementById(l.getAttribute("data-nav")); })
       .filter(Boolean);
@@ -519,7 +510,6 @@
       sections.forEach(function (s) { obs.observe(s); });
     }
 
-    /* dynamic island behaviour (desktop only) */
     function isDesktop() { return !state.mobile; }
 
     function expandIsland() {
@@ -565,7 +555,6 @@
 
     window.setTimeout(function () { moveIndicator(activeLink()); }, 700);
 
-    /* smooth scrolling for in-page anchors (excludes mobile-menu links, handled separately) */
     $$('a[href^="#"]').forEach(function (link) {
       if (link.hasAttribute("data-mobile-link")) return;
       link.addEventListener("click", function (e) {
@@ -1128,7 +1117,7 @@
   })();
 
   /* ------------------------------------------------------------------
-     WebGL scenes (Three.js) — auto-tuned for mobile performance
+     WebGL scenes (Three.js)
      ------------------------------------------------------------------ */
   (function webgl() {
     if (typeof window.THREE === "undefined") return;

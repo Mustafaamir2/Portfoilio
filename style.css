@@ -609,7 +609,7 @@ kbd {
   100%{box-shadow:0 0 0 0 rgba(78,214,164,0)}
 }
 
-/* ---- Two-line hamburger toggle (hidden on desktop, shown on mobile) ---- */
+/* ---- Two-line hamburger toggle ---- */
 .menu-toggle {
   display: none;
   flex-shrink: 0;
@@ -651,10 +651,9 @@ kbd {
 }
 
 /* ---------------------------------------------------------------
-   6. MOBILE MENU OVERLAY (sibling of header — never clipped)
+   6. MOBILE MENU OVERLAY
    --------------------------------------------------------------- */
 .mobile-menu {
-  /* Hidden on desktop; enabled inside the mobile media query below */
   display: none;
   position: fixed;
   inset: 0;
@@ -664,7 +663,6 @@ kbd {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 
-  /* Nearly-opaque glass panel — no hero text can bleed through */
   background:
     radial-gradient(120% 70% at 15% 0%, rgba(200, 182, 255, 0.65) 0%, rgba(200, 182, 255, 0) 55%),
     radial-gradient(100% 60% at 95% 100%, rgba(184, 156, 255, 0.6) 0%, rgba(184, 156, 255, 0) 60%),
@@ -682,7 +680,6 @@ body.menu-open .mobile-menu {
   pointer-events: auto;
 }
 
-/* soft glow orbs inside the panel */
 .mobile-menu-glow {
   position: absolute;
   border-radius: 50%;
@@ -701,7 +698,6 @@ body.menu-open .mobile-menu {
   background: radial-gradient(circle at 60% 40%, rgba(184,156,255,0.85), rgba(184,156,255,0) 70%);
 }
 
-/* moving sheen */
 .mobile-menu-sheen {
   position: absolute;
   inset: 0;
@@ -1388,6 +1384,30 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   transition: transform 0.9s var(--ease-out);
 }
 .project-card:hover .project-media img { transform: scale(1.07); }
+
+/* Clickable media wrapper (used by external-link project cards) */
+a.project-media {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+a.project-media:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 4px;
+  border-radius: var(--radius-lg);
+}
+a.project-media:hover .project-gloss,
+a.project-media:focus-visible .project-gloss {
+  opacity: 1;
+  transform: translateX(24%);
+}
+a.project-media:hover img,
+a.project-media:focus-visible img {
+  transform: scale(1.07);
+}
+
 .project-index {
   position: absolute;
   top: 1rem; left: 1.1rem;
@@ -2215,12 +2235,10 @@ body.webgl-ready .hero-fallback { opacity: 0; }
    18. RESPONSIVE — TABLET & MOBILE
    =============================================================== */
 
-/* ---------- ≤ 1180px: hide availability pill to make room ---------- */
 @media (max-width: 1180px) {
   .availability { display: none; }
 }
 
-/* ---------- ≤ 1024px: stack about, contact; single-column cards ---------- */
 @media (max-width: 1024px) {
   .about-grid { grid-template-columns: 1fr; }
   .about-stage { order: -1; min-height: min(420px, 78vw); }
@@ -2234,9 +2252,7 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   .work-nav { position: static; margin-top: 1.4rem; }
 }
 
-/* ---------- ≤ 860px: mobile top bar + full-screen overlay menu ---------- */
 @media (max-width: 860px) {
-  /* Top bar */
   .nav-shell,
   .nav-shell.is-collapsed {
     position: fixed;
@@ -2255,10 +2271,9 @@ body.webgl-ready .hero-fallback { opacity: 0; }
     overflow: visible;
     display: block;
     transition: none;
-    z-index: 10000; /* above the mobile-menu overlay so the toggle stays tappable */
+    z-index: 10000;
   }
 
-  /* Hide desktop island ornaments on mobile */
   .island-glass,
   .island-sheen,
   .island-mark { display: none !important; }
@@ -2274,7 +2289,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
     transition: none;
   }
 
-  /* Two-line hamburger toggle: leftmost item, above the overlay */
   .menu-toggle {
     display: block;
     order: -1;
@@ -2288,13 +2302,10 @@ body.webgl-ready .hero-fallback { opacity: 0; }
     box-shadow: 0 4px 14px -8px rgba(70, 47, 128, 0.3);
   }
 
-  /* Hide the desktop inline nav on mobile */
   .nav { display: none; }
 
-  /* Show the mobile-menu overlay only on mobile */
   .mobile-menu { display: block; }
 
-  /* When the menu is open, remove the top-bar divider so it looks seamless */
   body.menu-open .nav-shell {
     border-bottom-color: transparent;
     box-shadow: none;
@@ -2305,7 +2316,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
 
   .brand { flex-shrink: 0; }
 
-  /* Hero spacing to clear the taller fixed top bar */
   .hero { padding: calc(var(--nav-h) + 5vh) var(--gutter) 7rem; }
   .hero-copy { gap: 1.2rem; max-width: 100%; }
   .hero-meta { display: none; }
@@ -2319,7 +2329,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   .eyebrow { font-size: 0.68rem; padding: 0.4rem 0.9rem; }
   .hero-role { font-size: var(--step--1); gap: 0.55rem; }
 
-  /* Work gallery */
   .project { width: 86vw; }
   .gallery-track { padding-inline: 7vw; }
   .project-card {
@@ -2327,7 +2336,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
     opacity: calc(1 - (var(--p) * var(--p)) * 0.35);
   }
 
-  /* Skills become a responsive grid */
   .constellation { height: auto; min-height: 0; perspective: none; }
   .constellation-lines { display: none; }
   .skill-list {
@@ -2362,7 +2370,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   .tl-node { top: 2rem; }
 }
 
-/* ---------- ≤ 640px: smaller phones ---------- */
 @media (max-width: 640px) {
   .display { line-height: 0.98; }
   .display-sm { line-height: 1.05; }
@@ -2416,14 +2423,12 @@ body.webgl-ready .hero-fallback { opacity: 0; }
     padding: 1.75rem var(--gutter) 2.25rem;
   }
 
-  /* Menu overlay tweaks for smaller phones */
   .mobile-menu { padding: calc(var(--nav-h) + 1rem) var(--gutter) 2rem; }
   .mobile-menu-inner { gap: 1.1rem; }
   .mobile-menu-link { padding: 0.95rem 1.05rem; min-height: 58px; }
   .mm-arrow { width: 34px; height: 34px; }
 }
 
-/* ---------- ≤ 480px: compact phones ---------- */
 @media (max-width: 480px) {
   :root { --gutter: 1rem; }
 
@@ -2461,7 +2466,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
 
   .socials a { padding: 0.7rem 1rem; font-size: var(--step--1); }
 
-  /* Menu: smaller link text still clear and tappable */
   .mobile-menu-link {
     font-size: 1.05rem;
     padding: 0.9rem 1rem;
@@ -2473,7 +2477,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   .mm-arrow svg { width: 13px; height: 13px; }
 }
 
-/* ---------- ≤ 380px: very small phones ---------- */
 @media (max-width: 380px) {
   .display { letter-spacing: -0.05em; }
   .hero-actions { flex-direction: column; width: 100%; }
@@ -2484,7 +2487,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   .mobile-menu-link { font-size: 0.98rem; padding: 0.85rem 0.9rem; min-height: 52px; }
 }
 
-/* ---------- Coarse pointer / touch overrides ---------- */
 @media (hover: none) {
   .cursor { display: none; }
   .project-card:hover .project-gloss { opacity: 0; }
@@ -2511,7 +2513,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   .project-card { transform: none !important; opacity: 1 !important; }
   .quote-card { transition: none; }
   .nav-shell { transition: none; }
-  /* Ensure mobile menu items are immediately visible if reduced motion is on */
   .mobile-menu-link,
   .mobile-menu-eyebrow,
   .mobile-menu-foot { opacity: 1 !important; transform: none !important; }

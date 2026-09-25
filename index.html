@@ -70,14 +70,13 @@
   </div>
 </div>
 
-<!-- ============ NAVIGATION — Apple liquid-glass dynamic island ============ -->
+<!-- ============ NAVIGATION ============ -->
 <header class="nav-shell" id="nav">
   <span class="island-glass" aria-hidden="true"></span>
   <span class="island-sheen" aria-hidden="true"></span>
   <span class="island-mark" aria-hidden="true">M.C</span>
 
   <div class="island-row">
-    <!-- Two-line hamburger toggle (visible only on mobile) -->
     <button class="menu-toggle" id="menu-toggle" type="button"
             aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
       <span class="menu-toggle-line" aria-hidden="true"></span>
@@ -108,7 +107,7 @@
   </div>
 </header>
 
-<!-- ============ MOBILE MENU OVERLAY (sibling of header — no clipping) ============ -->
+<!-- ============ MOBILE MENU OVERLAY ============ -->
 <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true"
      aria-label="Mobile navigation" aria-hidden="true">
   <div class="mobile-menu-glow mobile-menu-glow-1" aria-hidden="true"></div>
@@ -128,54 +127,42 @@
           <a href="#home" class="mobile-menu-link" data-mobile-link>
             <span class="mm-num">01</span>
             <span class="mm-label">Home</span>
-            <span class="mm-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
-            </span>
+            <span class="mm-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
           </a>
         </li>
         <li style="--i:1">
           <a href="#about" class="mobile-menu-link" data-mobile-link>
             <span class="mm-num">02</span>
             <span class="mm-label">About</span>
-            <span class="mm-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
-            </span>
+            <span class="mm-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
           </a>
         </li>
         <li style="--i:2">
           <a href="#skills" class="mobile-menu-link" data-mobile-link>
             <span class="mm-num">03</span>
             <span class="mm-label">Skills</span>
-            <span class="mm-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
-            </span>
+            <span class="mm-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
           </a>
         </li>
         <li style="--i:3">
           <a href="#experience" class="mobile-menu-link" data-mobile-link>
             <span class="mm-num">04</span>
             <span class="mm-label">Experience</span>
-            <span class="mm-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
-            </span>
+            <span class="mm-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
           </a>
         </li>
         <li style="--i:4">
           <a href="#work" class="mobile-menu-link" data-mobile-link>
             <span class="mm-num">05</span>
             <span class="mm-label">Work</span>
-            <span class="mm-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
-            </span>
+            <span class="mm-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
           </a>
         </li>
         <li style="--i:5">
           <a href="#contact" class="mobile-menu-link" data-mobile-link>
             <span class="mm-num">06</span>
             <span class="mm-label">Contact</span>
-            <span class="mm-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
-            </span>
+            <span class="mm-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
           </a>
         </li>
       </ul>
@@ -218,7 +205,7 @@
     </div>
 
     <div class="hero-meta" aria-hidden="true">
-      <span class="hero-index">01 <i></i> 08</span>
+      <span class="hero-index">01 <i></i> 13</span>
       <span class="hero-hint">Drag anywhere to orbit</span>
     </div>
 
@@ -302,6 +289,7 @@
     <div class="gallery" id="gallery" role="region" aria-label="Project gallery, horizontally scrollable" tabindex="0">
       <ul class="gallery-track" id="gallery-track">
 
+        <!-- 01 · SchoolFlow360 (case study) -->
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <div class="project-media">
@@ -339,6 +327,7 @@
           </template>
         </li>
 
+        <!-- 02 · AURA by HS (case study) -->
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <div class="project-media">
@@ -376,6 +365,7 @@
           </template>
         </li>
 
+        <!-- 03 · Cyber Campus (case study) -->
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <div class="project-media">
@@ -413,6 +403,7 @@
           </template>
         </li>
 
+        <!-- 04 · Genesis (case study) -->
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <div class="project-media">
@@ -448,6 +439,195 @@
               <div><dt>Deliverables</dt><dd>Identity, product UI, launch film</dd></div>
             </dl>
           </template>
+        </li>
+
+        <!-- 05 · Meeting Sense Frontend -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://ai-meeting-sense-frontend.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Meeting Sense Frontend in a new tab">
+              <img src="https://placehold.co/1200x900/6C4AB6/FFFFFF/png?text=Meeting+Sense&font=roboto" alt="Meeting Sense Frontend preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">05</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">AI / Productivity</p>
+              <h3 class="project-title">Meeting Sense</h3>
+              <p class="project-desc">AI-powered meeting intelligence that turns live conversations into structured summaries, decisions and action items.</p>
+              <ul class="tech-list"><li>AI</li><li>React</li><li>Next.js</li></ul>
+              <a class="project-open" href="https://ai-meeting-sense-frontend.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit Meeting Sense Frontend">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
+        </li>
+
+        <!-- 06 · AI Medical Assistant -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://ai-doctor-virtual-medical-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open AI Medical Assistant in a new tab">
+              <img src="https://placehold.co/1200x900/5B3FA6/FFFFFF/png?text=AI+Medical+Assistant&font=roboto" alt="AI Medical Assistant preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">06</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">AI / Healthcare</p>
+              <h3 class="project-title">AI Medical Assistant</h3>
+              <p class="project-desc">A virtual medical assistant delivering clear symptom guidance, triage support and health education in seconds.</p>
+              <ul class="tech-list"><li>AI</li><li>Healthcare</li><li>LLM</li></ul>
+              <a class="project-open" href="https://ai-doctor-virtual-medical-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit AI Medical Assistant">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
+        </li>
+
+        <!-- 07 · Well Being Agent -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://well-being-agent.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Well Being Agent in a new tab">
+              <img src="https://placehold.co/1200x900/8464CF/FFFFFF/png?text=Well+Being+Agent&font=roboto" alt="Well Being Agent preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">07</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">AI / Wellness</p>
+              <h3 class="project-title">Well Being Agent</h3>
+              <p class="project-desc">A calm, conversational AI companion for mindfulness, mood tracking and daily reflective practice.</p>
+              <ul class="tech-list"><li>AI</li><li>Wellness</li><li>Conversational</li></ul>
+              <a class="project-open" href="https://well-being-agent.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit Well Being Agent">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
+        </li>
+
+        <!-- 08 · ICC World Cup RAG System -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://cricket-world-cup-rag-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open ICC World Cup RAG System in a new tab">
+              <img src="https://placehold.co/1200x900/462F80/FFFFFF/png?text=Cricket+World+Cup+RAG&font=roboto" alt="ICC World Cup RAG System preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">08</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">AI / Sports Analytics</p>
+              <h3 class="project-title">Cricket World Cup RAG</h3>
+              <p class="project-desc">A retrieval-augmented assistant answering deep questions across twenty years of ICC World Cup history (2003–2023).</p>
+              <ul class="tech-list"><li>RAG</li><li>AI</li><li>Vector DB</li></ul>
+              <a class="project-open" href="https://cricket-world-cup-rag-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit ICC World Cup RAG System">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
+        </li>
+
+        <!-- 09 · Email Automation -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://email-automation-sigma-navy.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Email Automation in a new tab">
+              <img src="https://placehold.co/1200x900/B89CFF/1B1436/png?text=Email+Automation&font=roboto" alt="Email Automation preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">09</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">AI / Productivity</p>
+              <h3 class="project-title">Email Automation</h3>
+              <p class="project-desc">An AI workflow that drafts, schedules and follows up on outreach so teams can stay in deep work.</p>
+              <ul class="tech-list"><li>Automation</li><li>AI</li><li>Workflow</li></ul>
+              <a class="project-open" href="https://email-automation-sigma-navy.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit Email Automation">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
+        </li>
+
+        <!-- 10 · AI Software House Agents -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://multi-agent-ai-software-house.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open AI Software House Agents in a new tab">
+              <img src="https://placehold.co/1200x900/8A67D6/FFFFFF/png?text=AI+Software+House&font=roboto" alt="AI Software House Agents preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">10</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">AI / Multi-Agent Systems</p>
+              <h3 class="project-title">AI Software House</h3>
+              <p class="project-desc">A multi-agent system simulating a complete software house — from requirements and design to code review and QA.</p>
+              <ul class="tech-list"><li>Multi-Agent</li><li>AI</li><li>LLM</li></ul>
+              <a class="project-open" href="https://multi-agent-ai-software-house.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit AI Software House Agents">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
+        </li>
+
+        <!-- 11 · Bazme Sukhan -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://bazme-nazam.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Bazme Sukhan in a new tab">
+              <img src="https://placehold.co/1200x900/C8B6FF/1B1436/png?text=Bazme+Sukhan&font=roboto" alt="Bazme Sukhan Urdu History RAG Platform preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">11</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">AI / Cultural Heritage</p>
+              <h3 class="project-title">Bazme Sukhan</h3>
+              <p class="project-desc">An Urdu-language RAG platform that traces centuries of poetry, prose and literary history in one conversational surface.</p>
+              <ul class="tech-list"><li>RAG</li><li>Urdu</li><li>Cultural AI</li></ul>
+              <a class="project-open" href="https://bazme-nazam.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit Bazme Sukhan">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
+        </li>
+
+        <!-- 12 · Customer RAG System -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://safe-x-knowledge-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Customer RAG System in a new tab">
+              <img src="https://placehold.co/1200x900/4A2D96/FFFFFF/png?text=Customer+RAG+Assistant&font=roboto" alt="Customer RAG System preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">12</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">AI / E-commerce</p>
+              <h3 class="project-title">Customer RAG Assistant</h3>
+              <p class="project-desc">A retrieval-augmented support system answering delivery, order and returns queries across Shopify, Amazon and more.</p>
+              <ul class="tech-list"><li>RAG</li><li>E-commerce</li><li>Support</li></ul>
+              <a class="project-open" href="https://safe-x-knowledge-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit Customer RAG System">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
+        </li>
+
+        <!-- 13 · Zenthronix -->
+        <li class="project" data-project>
+          <article class="project-card" data-tilt data-tilt-strength="10">
+            <a class="project-media" href="https://zenthronix.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Zenthronix in a new tab">
+              <img src="https://placehold.co/1200x900/6C4AB6/FFFFFF/png?text=Zenthronix&font=roboto" alt="Zenthronix electronics marketplace preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <span class="project-index" aria-hidden="true">13</span>
+              <span class="project-gloss" aria-hidden="true"></span>
+            </a>
+            <div class="project-body">
+              <p class="project-cat">E-commerce / Marketplace</p>
+              <h3 class="project-title">Zenthronix</h3>
+              <p class="project-desc">A full-featured marketplace connecting electronics buyers, sellers and resellers with clear listings and verified trades.</p>
+              <ul class="tech-list"><li>Marketplace</li><li>E-commerce</li><li>Platform</li></ul>
+              <a class="project-open" href="https://zenthronix.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit Zenthronix">
+                <span>Visit project</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+              </a>
+            </div>
+          </article>
         </li>
 
       </ul>
@@ -542,54 +722,42 @@
 
     <ul class="service-grid">
       <li class="service-card" data-reveal data-tilt data-tilt-strength="12">
-        <span class="service-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><path d="M30 6 8 28l-2 14 14-2L42 18 30 6Z" /><path d="m26 10 12 12M18 40 8 30" /><path d="m20 26 4 4" /></svg>
-        </span>
+        <span class="service-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M30 6 8 28l-2 14 14-2L42 18 30 6Z" /><path d="m26 10 12 12M18 40 8 30" /><path d="m20 26 4 4" /></svg></span>
         <h3>Creative Design</h3>
         <p>Art direction and visual systems that carry one idea across every surface.</p>
         <span class="service-num" aria-hidden="true">01</span>
       </li>
 
       <li class="service-card" data-reveal data-delay="0.06" data-tilt data-tilt-strength="12">
-        <span class="service-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><path d="M24 8 8 17l16 9 16-9-16-9Z" /><path d="M8 26l16 9 16-9M8 33l16 9 16-9" /></svg>
-        </span>
+        <span class="service-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 8 8 17l16 9 16-9-16-9Z" /><path d="M8 26l16 9 16-9M8 33l16 9 16-9" /></svg></span>
         <h3>UI/UX</h3>
         <p>Interfaces researched, structured and detailed until they feel obvious.</p>
         <span class="service-num" aria-hidden="true">02</span>
       </li>
 
       <li class="service-card" data-reveal data-delay="0.12" data-tilt data-tilt-strength="12">
-        <span class="service-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="9" /><path d="M24 4v10M24 34v10M4 24h10M34 24h10M10 10l7 7M31 31l7 7M38 10l-7 7M17 31l-7 7" /></svg>
-        </span>
+        <span class="service-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="9" /><path d="M24 4v10M24 34v10M4 24h10M34 24h10M10 10l7 7M31 31l7 7M38 10l-7 7M17 31l-7 7" /></svg></span>
         <h3>Brand Identity</h3>
         <p>Names, marks and systems built to stay recognizable as you scale.</p>
         <span class="service-num" aria-hidden="true">03</span>
       </li>
 
       <li class="service-card" data-reveal data-delay="0.18" data-tilt data-tilt-strength="12">
-        <span class="service-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><path d="M17 15 6 24l11 9M31 15l11 9-11 9M27 10 21 38" /></svg>
-        </span>
+        <span class="service-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M17 15 6 24l11 9M31 15l11 9-11 9M27 10 21 38" /></svg></span>
         <h3>Web Development</h3>
         <p>Fast, accessible front-ends where the build honours the design.</p>
         <span class="service-num" aria-hidden="true">04</span>
       </li>
 
       <li class="service-card" data-reveal data-delay="0.24" data-tilt data-tilt-strength="12">
-        <span class="service-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><path d="M24 7 9 15.5v17L24 41l15-8.5v-17L24 7Z" /><path d="M9 15.5 24 24l15-8.5M24 24v17" /><circle cx="24" cy="24" r="3.5" /></svg>
-        </span>
+        <span class="service-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 7 9 15.5v17L24 41l15-8.5v-17L24 7Z" /><path d="M9 15.5 24 24l15-8.5M24 24v17" /><circle cx="24" cy="24" r="3.5" /></svg></span>
         <h3>3D &amp; Motion</h3>
         <p>Dimensional storytelling — real-time scenes, film and interface motion.</p>
         <span class="service-num" aria-hidden="true">05</span>
       </li>
 
       <li class="service-card" data-reveal data-delay="0.3" data-tilt data-tilt-strength="12">
-        <span class="service-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="12" /><ellipse cx="24" cy="24" rx="19" ry="7.5" /><circle cx="24" cy="24" r="3" /></svg>
-        </span>
+        <span class="service-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="12" /><ellipse cx="24" cy="24" rx="19" ry="7.5" /><circle cx="24" cy="24" r="3" /></svg></span>
         <h3>Digital Experiences</h3>
         <p>Launches, showrooms and installations built to be remembered.</p>
         <span class="service-num" aria-hidden="true">06</span>
