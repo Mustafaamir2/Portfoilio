@@ -298,26 +298,56 @@ kbd {
 }
 .cursor.is-live { opacity: 1; }
 
-.cursor-dot, .cursor-halo {
+.cursor-dot, .cursor-halo, .cursor-hand {
   position: absolute;
   top: 0; left: 0;
-  border-radius: 50%;
-  transform: translate3d(-50%, -50%, 0);
+  pointer-events: none;
   will-change: transform;
 }
-.cursor-dot {
-  width: 7px; height: 7px;
-  background: var(--violet);
-  transition: width 0.3s var(--ease-elastic), height 0.3s var(--ease-elastic), background 0.3s ease;
-}
+
+/* Small violet dot — kept for legacy but visually hidden so the AI hand
+   acts as the primary pointer. */
+.cursor-dot { display: none; }
+
+/* Existing circular glow — untouched. */
 .cursor-halo {
+  border-radius: 50%;
+  transform: translate3d(-50%, -50%, 0);
   width: 320px; height: 320px;
   background: radial-gradient(circle, rgba(184,156,255,0.4) 0%, rgba(184,156,255,0.12) 38%, rgba(184,156,255,0) 70%);
   filter: blur(6px);
   transition: width 0.5s var(--ease-out), height 0.5s var(--ease-out), opacity 0.4s ease;
 }
-.cursor.is-hover .cursor-dot { width: 16px; height: 16px; background: var(--lav-400); }
 .cursor.is-hover .cursor-halo { width: 420px; height: 420px; }
+
+/* ----- Custom futuristic AI hand cursor ----- */
+.cursor-hand {
+  /* Offset so the "hotspot" (index fingertip) aligns with the actual pointer */
+  top: -3px;
+  left: -10px;
+  width: 26px;
+  height: 26px;
+  transform: translate3d(0, 0, 0);
+  z-index: 2;
+  filter:
+    drop-shadow(0 0 6px rgba(184, 156, 255, 0.9))
+    drop-shadow(0 0 14px rgba(108, 74, 182, 0.55));
+  transition: filter 0.3s ease;
+}
+.cursor-hand svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transform: scale(1);
+  transform-origin: 40% 15%;
+  transition: transform 0.28s var(--ease-elastic);
+}
+.cursor.is-hover .cursor-hand {
+  filter:
+    drop-shadow(0 0 9px rgba(200, 182, 255, 1))
+    drop-shadow(0 0 20px rgba(108, 74, 182, 0.85));
+}
+.cursor.is-hover .cursor-hand svg { transform: scale(1.16); }
 
 /* Hide the native mouse arrow ONLY when the custom glow cursor is active.
    The glow circle itself is untouched. While the intro curtain is up
@@ -1190,12 +1220,13 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: center 22%;
-  transform: scale(1.02);
+  /* Biased slightly upward so the head stays fully in frame on the
+     portrait — the lower part (background/legs) is what gets cropped. */
+  object-position: center 25%;
   transition: transform 1.2s var(--ease-out);
   will-change: transform;
 }
-.profile-card:hover .profile-photo img { transform: scale(1.08); }
+.profile-card:hover .profile-photo img { transform: scale(1.06); }
 /* Gradient scrim at the bottom so the meta text always reads cleanly */
 .profile-photo::after {
   content: "";
@@ -1721,6 +1752,7 @@ a.project-media:focus-visible img {
   gap: 0.35rem;
   width: max-content;
   max-width: 16rem;
+  box-sizing: border-box;
   padding: 0.85rem 1.25rem;
   min-height: 44px;
   border-radius: 999px;
@@ -1740,7 +1772,11 @@ a.project-media:focus-visible img {
   font-size: var(--step-0);
   font-weight: 500;
   letter-spacing: -0.02em;
-  white-space: nowrap;
+  line-height: 1.15;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  text-align: center;
   color: var(--ink);
   transition: color 0.35s ease;
 }
@@ -1749,11 +1785,14 @@ a.project-media:focus-visible img {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 0;
   width: 0;
+  max-width: 100%;
   min-width: 0;
   max-height: 0;
   overflow: hidden;
   font-size: 0.8rem;
   line-height: 1.45;
+  text-align: center;
+  overflow-wrap: anywhere;
   color: var(--ink-soft);
   opacity: 0;
   transition: width 0.5s var(--ease-out), max-height 0.5s var(--ease-out), opacity 0.4s ease;
@@ -1776,7 +1815,8 @@ a.project-media:focus-visible img {
 .skill:focus-visible .skill-note,
 .skill.is-active .skill-note {
   -webkit-line-clamp: 3;
-  width: 15rem;
+  /* 100% of the button's content box — never overflows the card. */
+  width: 100%;
   max-height: 4.6em;
   opacity: 1;
 }
@@ -2374,6 +2414,7 @@ a.project-media:focus-visible img {
     animation: none;
     border-radius: var(--radius);
     padding: 1rem 1.25rem;
+    box-sizing: border-box;
   }
   .skill-note {
     -webkit-line-clamp: 4;

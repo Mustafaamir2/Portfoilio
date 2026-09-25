@@ -57,6 +57,32 @@
 <div class="cursor" aria-hidden="true">
   <span class="cursor-dot"></span>
   <span class="cursor-halo"></span>
+  <span class="cursor-hand" aria-hidden="true">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="cursorHandGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#FFFFFF"/>
+          <stop offset="45%" stop-color="#C8B6FF"/>
+          <stop offset="100%" stop-color="#6C4AB6"/>
+        </linearGradient>
+      </defs>
+      <!-- Three fingers pointing up -->
+      <rect x="8"    y="3" width="2.2" height="10"   rx="1.1" fill="url(#cursorHandGrad)"/>
+      <rect x="11"   y="2" width="2.2" height="11"   rx="1.1" fill="url(#cursorHandGrad)"/>
+      <rect x="14"   y="3" width="2.2" height="10"   rx="1.1" fill="url(#cursorHandGrad)"/>
+      <!-- Palm -->
+      <path fill="url(#cursorHandGrad)"
+            d="M6 12.5 C6 11.7 6.7 11 7.5 11 L16.5 11
+               C18.4 11 20 12.6 20 14.5 L20 16.5
+               C20 19.8 17.3 22.5 14 22.5 L12 22.5
+               C8.7 22.5 6 19.8 6 16.5 Z"/>
+      <!-- Thumb -->
+      <path fill="url(#cursorHandGrad)"
+            d="M6.5 14 C5.6 13.3 5 12.3 5 11
+               C5 9.9 5.9 9 7 9
+               C8 9 8.8 9.7 9 10.7 L9.5 12.5 Z"/>
+    </svg>
+  </span>
 </div>
 
 <div class="scroll-progress" aria-hidden="true"><span></span></div>

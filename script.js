@@ -245,13 +245,14 @@
     }
 
     /* Flag the body so CSS can hide the native arrow while this custom
-       glow cursor is the one on screen. The halo/dot logic below is
-       unchanged — only the native arrow is hidden. */
+       cursor (futuristic AI hand + glow halo) is the one on screen. */
     body.classList.add("has-custom-cursor");
 
-    var dot = $(".cursor-dot", el);
+    var dot  = $(".cursor-dot", el);
     var halo = $(".cursor-halo", el);
-    var pos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    var hand = $(".cursor-hand", el);
+
+    var pos  = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     var slow = { x: pos.x, y: pos.y };
     var live = false;
 
@@ -277,8 +278,20 @@
     addTicker(function () {
       slow.x = lerp(slow.x, pos.x, 0.12);
       slow.y = lerp(slow.y, pos.y, 0.12);
-      if (dot) dot.style.transform = "translate3d(" + pos.x + "px," + pos.y + "px,0) translate(-50%,-50%)";
-      if (halo) halo.style.transform = "translate3d(" + slow.x + "px," + slow.y + "px,0) translate(-50%,-50%)";
+
+      /* The glow halo trails the pointer smoothly (unchanged behaviour). */
+      if (halo) halo.style.transform =
+        "translate3d(" + slow.x + "px," + slow.y + "px,0) translate(-50%,-50%)";
+
+      /* The AI hand tracks the pointer exactly — its CSS offset aligns
+         the index fingertip with the real pointer position. */
+      if (hand) hand.style.transform =
+        "translate3d(" + pos.x + "px," + pos.y + "px,0)";
+
+      /* The legacy dot is hidden via CSS but we keep its transform in
+         case it is re-enabled later. */
+      if (dot) dot.style.transform =
+        "translate3d(" + pos.x + "px," + pos.y + "px,0) translate(-50%,-50%)";
     });
   })();
 
