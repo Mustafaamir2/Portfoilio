@@ -11,12 +11,12 @@
 <link rel="canonical" href="https://Mustafa Creates.example/" />
 
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Mustafa Createsportfoilio-delta.vercel.app — I don't just design. I create experiences." />
+<meta property="og:title" content="Mustafa Creates — I don't just design. I create experiences." />
 <meta property="og:description" content="A luxury digital art gallery meets a futuristic creative studio." />
 <meta property="og:image" content="assets/project-genesis.jpg" />
 <meta property="og:url" content="https://Mustafa Creates.example/" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="mustafa Creates — I don't just design. I create experiences." />
+<meta name="twitter:title" content="Mustafa Creates — I don't just design. I create experiences." />
 <meta name="twitter:description" content="Interactive 3D portfolio of a creative designer, developer and digital experience creator." />
 <meta name="twitter:image" content="assets/project-genesis.jpg" />
 
@@ -77,6 +77,13 @@
   <span class="island-mark" aria-hidden="true">M.C</span>
 
   <div class="island-row">
+    <!-- Two-line hamburger toggle (visible only on mobile) -->
+    <button class="menu-toggle" id="menu-toggle" type="button"
+            aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+      <span class="menu-toggle-line" aria-hidden="true"></span>
+      <span class="menu-toggle-line" aria-hidden="true"></span>
+    </button>
+
     <a class="brand" href="#home" aria-label="Mustafa Creates — home">
       <span class="brand-mark" aria-hidden="true">M.C</span>
       <span class="brand-text">Mustafa<em>Creates</em></span>
@@ -98,13 +105,88 @@
       <span class="pulse" aria-hidden="true"></span>
       Available for creative projects
     </p>
-
-    <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="nav-list" aria-label="Open menu">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-    </button>
   </div>
 </header>
+
+<!-- ============ MOBILE MENU OVERLAY (sibling of header — no clipping) ============ -->
+<div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true"
+     aria-label="Mobile navigation" aria-hidden="true">
+  <div class="mobile-menu-glow mobile-menu-glow-1" aria-hidden="true"></div>
+  <div class="mobile-menu-glow mobile-menu-glow-2" aria-hidden="true"></div>
+  <div class="mobile-menu-sheen" aria-hidden="true"></div>
+
+  <div class="mobile-menu-inner">
+    <p class="mobile-menu-eyebrow">
+      <span>Menu</span>
+      <i aria-hidden="true"></i>
+      <span>Navigate</span>
+    </p>
+
+    <nav class="mobile-menu-nav" aria-label="Mobile primary">
+      <ul class="mobile-menu-list">
+        <li style="--i:0">
+          <a href="#home" class="mobile-menu-link" data-mobile-link>
+            <span class="mm-num">01</span>
+            <span class="mm-label">Home</span>
+            <span class="mm-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </span>
+          </a>
+        </li>
+        <li style="--i:1">
+          <a href="#about" class="mobile-menu-link" data-mobile-link>
+            <span class="mm-num">02</span>
+            <span class="mm-label">About</span>
+            <span class="mm-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </span>
+          </a>
+        </li>
+        <li style="--i:2">
+          <a href="#skills" class="mobile-menu-link" data-mobile-link>
+            <span class="mm-num">03</span>
+            <span class="mm-label">Skills</span>
+            <span class="mm-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </span>
+          </a>
+        </li>
+        <li style="--i:3">
+          <a href="#experience" class="mobile-menu-link" data-mobile-link>
+            <span class="mm-num">04</span>
+            <span class="mm-label">Experience</span>
+            <span class="mm-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </span>
+          </a>
+        </li>
+        <li style="--i:4">
+          <a href="#work" class="mobile-menu-link" data-mobile-link>
+            <span class="mm-num">05</span>
+            <span class="mm-label">Work</span>
+            <span class="mm-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </span>
+          </a>
+        </li>
+        <li style="--i:5">
+          <a href="#contact" class="mobile-menu-link" data-mobile-link>
+            <span class="mm-num">06</span>
+            <span class="mm-label">Contact</span>
+            <span class="mm-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <p class="mobile-menu-foot">
+      <span class="pulse" aria-hidden="true"></span>
+      Available for creative projects
+    </p>
+  </div>
+</div>
 
 <main id="main">
 

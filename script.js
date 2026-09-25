@@ -38,19 +38,9 @@
   onQueryChange(tabletQuery, function (e) { state.tablet = e.matches; });
   onQueryChange(mobileQuery, function (e) {
     state.mobile = e.matches;
-    if (e.matches) closeMenuIfOpen();
+    if (e.matches) closeMenu();
   });
   onQueryChange(smallQuery, function (e) { state.small = e.matches; });
-
-  function closeMenuIfOpen() {
-    body.classList.remove("menu-open");
-    body.classList.remove("no-scroll");
-    var t = document.getElementById("menu-toggle");
-    if (t) {
-      t.setAttribute("aria-expanded", "false");
-      t.setAttribute("aria-label", "Open menu");
-    }
-  }
 
   /* ------------------------------------------------------------------
      Helpers
@@ -118,6 +108,103 @@
   window.addEventListener("scroll", throttleFrame(function () {
     state.scrollY = window.scrollY;
   }), { passive: true });
+
+  /* ------------------------------------------------------------------
+     Mobile menu — open / close state
+     ------------------------------------------------------------------ */
+  var mobileMenuEl = $("#mobile-menu");
+  var menuToggleEl = $("#menu-toggle");
+  var mobileLinks  = $$("[data-mobile-link]");
+  var lastFocusedBeforeMenu = null;
+
+  function openMenu() {
+    if (!state.mobile) return;
+    lastFocusedBeforeMenu = doc.activeElement;
+    body.classList.add("menu-open");
+    body.classList.add("no-scroll");
+    if (mobileMenuEl) mobileMenuEl.setAttribute("aria-hidden", "false");
+    if (menuToggleEl) {
+      menuToggleEl.setAttribute("aria-expanded", "true");
+      menuToggleEl.setAttribute("aria-label", "Close menu");
+    }
+    // Move focus to first link for accessibility
+    window.setTimeout(function () {
+      if (mobileLinks[0]) mobileLinks[0].focus({ preventScroll: true });
+    }, 120);
+  }
+
+  function closeMenu() {
+    if (!body.classList.contains("menu-open")) return;
+    body.classList.remove("menu-open");
+    body.classList.remove("no-scroll");
+    if (mobileMenuEl) mobileMenuEl.setAttribute("aria-hidden", "true");
+    if (menuToggleEl) {
+      menuToggleEl.setAttribute("aria-expanded", "false");
+      menuToggleEl.setAttribute("aria-label", "Open menu");
+    }
+    if (lastFocusedBeforeMenu && lastFocusedBeforeMenu.focus) {
+      lastFocusedBeforeMenu.focus({ preventScroll: true });
+      lastFocusedBeforeMenu = null;
+    }
+  }
+
+  function toggleMenu() {
+    if (body.classList.contains("menu-open")) closeMenu();
+    else openMenu();
+  }
+
+  if (menuToggleEl) {
+    menuToggleEl.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMenu();
+    });
+  }
+
+  // Close the drawer on any mobile link tap, then smooth-scroll to target
+  mobileLinks.forEach(function (link) {
+    link.addEventListener("click", function (e) {
+      var id = link.getAttribute("href");
+      if (!id || id === "#") { closeMenu(); return; }
+      var target = doc.querySelector(id);
+      if (!target) { closeMenu(); return; }
+
+      e.preventDefault();
+      closeMenu();
+
+      // Give the close animation a moment, then scroll
+      window.setTimeout(function () {
+        target.scrollIntoView({
+          behavior: prefersStillness() ? "auto" : "smooth",
+          block: "start"
+        });
+        target.setAttribute("tabindex", "-1");
+        window.setTimeout(function () {
+          target.focus({ preventScroll: true });
+        }, 520);
+      }, 180);
+    });
+  });
+
+  // Close the drawer when clicking outside its inner content
+  if (mobileMenuEl) {
+    mobileMenuEl.addEventListener("click", function (e) {
+      if (e.target === mobileMenuEl) closeMenu();
+    });
+  }
+
+  // Escape closes the drawer
+  doc.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && body.classList.contains("menu-open")) {
+      closeMenu();
+      if (menuToggleEl) menuToggleEl.focus({ preventScroll: true });
+    }
+  });
+
+  // Auto-close when resizing up to desktop
+  window.addEventListener("resize", throttleFrame(function () {
+    if (!state.mobile && body.classList.contains("menu-open")) closeMenu();
+  }));
 
   /* ------------------------------------------------------------------
      Intro curtain
@@ -377,12 +464,12 @@
   })();
 
   /* ------------------------------------------------------------------
-     Navigation — Dynamic Island
+     Desktop navigation — Dynamic Island behaviour
+     (mobile handled by the separate overlay above)
      ------------------------------------------------------------------ */
   (function navigation() {
     var shell = $("#nav");
     var list = $("#nav-list");
-    var toggle = $("#menu-toggle");
     var links = $$(".nav-link");
     var indicator = $(".nav-indicator");
     if (!shell || !list) return;
@@ -390,35 +477,7 @@
     var SCROLL_TRIGGER = 60;
     var RE_OPEN_AT     = 30;
 
-    function setMenu(open) {
-      body.classList.toggle("menu-open", open);
-      body.classList.toggle("no-scroll", open);
-      if (toggle) {
-        toggle.setAttribute("aria-expanded", open ? "true" : "false");
-        toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-      }
-    }
-
-    if (toggle) {
-      toggle.addEventListener("click", function () {
-        setMenu(!body.classList.contains("menu-open"));
-      });
-    }
-
-    links.forEach(function (link) {
-      link.addEventListener("click", function () {
-        if (body.classList.contains("menu-open")) setMenu(false);
-      });
-    });
-
-    doc.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && body.classList.contains("menu-open")) {
-        setMenu(false);
-        if (toggle) toggle.focus();
-      }
-    });
-
-    /* sliding pill indicator */
+    /* sliding pill indicator (desktop only) */
     function moveIndicator(link) {
       if (!indicator || state.mobile || !link) return;
       indicator.style.width = link.offsetWidth + "px";
@@ -460,7 +519,7 @@
       sections.forEach(function (s) { obs.observe(s); });
     }
 
-    /* dynamic island behaviour */
+    /* dynamic island behaviour (desktop only) */
     function isDesktop() { return !state.mobile; }
 
     function expandIsland() {
@@ -469,7 +528,6 @@
     }
     function collapseIsland() { shell.classList.add("is-collapsed"); }
 
-    /* Scroll: collapse on down, expand at top */
     window.addEventListener("scroll", throttleFrame(function () {
       if (!isDesktop()) return;
       var y = window.scrollY;
@@ -507,8 +565,9 @@
 
     window.setTimeout(function () { moveIndicator(activeLink()); }, 700);
 
-    /* smooth scrolling */
+    /* smooth scrolling for in-page anchors (excludes mobile-menu links, handled separately) */
     $$('a[href^="#"]').forEach(function (link) {
+      if (link.hasAttribute("data-mobile-link")) return;
       link.addEventListener("click", function (e) {
         var id = link.getAttribute("href");
         if (!id || id === "#") return;
