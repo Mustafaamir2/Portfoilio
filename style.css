@@ -1177,20 +1177,69 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   -webkit-backface-visibility: hidden;
   overflow: hidden;
 }
+
+/* ---- FRONT FACE: photo on top, meta underneath ---- */
 .profile-front {
-  align-content: space-between;
+  padding: 0;
+  grid-template-rows: 1fr auto;
+  align-content: stretch;
   border: 1px solid var(--glass-line);
   background: linear-gradient(150deg, rgba(255,255,255,0.86) 0%, rgba(244,240,255,0.6) 50%, rgba(200,182,255,0.44) 100%);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.9);
 }
+
+/* The photo plate — fills the top of the card, clipped by the card's radius */
+.profile-photo {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--lav-200) 0%, var(--lav-300) 100%);
+  isolation: isolate;
+}
+.profile-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 22%;
+  transform: scale(1.02);
+  transition: transform 1.2s var(--ease-out);
+  will-change: transform;
+}
+.profile-card:hover .profile-photo img { transform: scale(1.08); }
+/* Gradient scrim at the bottom so the meta text always reads cleanly */
+.profile-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(27,20,54,0) 55%,
+    rgba(27,20,54,0.10) 78%,
+    rgba(27,20,54,0.28) 100%);
+  pointer-events: none;
+}
+
+/* Name + role beneath the photo */
+.profile-meta {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.15rem 1.35rem 1.4rem;
+  padding-right: 4.5rem; /* leaves room for the "Flip" hint at bottom-right */
+  border-top: 1px solid rgba(255,255,255,0.55);
+  background: linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.82) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  text-align: left;
+}
+
 .profile-mark {
   font-family: var(--font-display);
-  font-size: clamp(3rem, 9vw, 4.6rem);
+  font-size: clamp(1.6rem, 5.2vw, 2.05rem);
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.07em;
+  line-height: 1.02;
+  letter-spacing: -0.05em;
   background: var(--holo-text);
   background-size: 240% 100%;
   -webkit-background-clip: text;
@@ -1200,17 +1249,29 @@ body.webgl-ready .hero-fallback { opacity: 0; }
 }
 .profile-role {
   font-size: var(--step--1);
-  line-height: 1.5;
+  line-height: 1.4;
   color: var(--ink-soft);
 }
+
+/* Pill "01" sits on top of the photo — added a chip bg so it stays readable */
 .profile-corner {
   position: absolute;
-  top: 1.6rem; right: 1.8rem;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   font-family: var(--font-display);
-  font-size: 0.7rem;
+  font-size: 0.66rem;
+  font-weight: 500;
   letter-spacing: 0.2em;
-  color: var(--violet);
+  color: var(--violet-deep);
+  box-shadow: 0 4px 12px -4px rgba(70,47,128,0.35);
+  z-index: 2;
 }
+
 .profile-shine {
   position: absolute;
   inset: -40%;
@@ -2427,6 +2488,9 @@ a.project-media:focus-visible img {
   .mobile-menu-inner { gap: 1.1rem; }
   .mobile-menu-link { padding: 0.95rem 1.05rem; min-height: 58px; }
   .mm-arrow { width: 34px; height: 34px; }
+
+  /* Menu tweaks for profile meta */
+  .profile-meta { padding: 1rem 1.15rem 1.25rem; padding-right: 4rem; }
 }
 
 @media (max-width: 480px) {
@@ -2449,7 +2513,9 @@ a.project-media:focus-visible img {
 
   .profile-card { width: min(250px, 82vw); }
   .profile-flip-hint { right: 1.2rem; bottom: 1.3rem; font-size: 0.58rem; }
-  .profile-front { padding: 1.35rem; }
+  .profile-meta { padding: 0.95rem 1rem 1.15rem; padding-right: 3.4rem; }
+  .profile-mark { font-size: 1.45rem; }
+  .profile-corner { top: 0.75rem; right: 0.75rem; padding: 0.22rem 0.6rem; font-size: 0.6rem; }
 
   .project { width: 92vw; }
   .project-cat { font-size: 0.64rem; letter-spacing: 0.18em; }
