@@ -184,17 +184,6 @@ ul, ol { list-style: none; padding: 0; }
   text-transform: uppercase;
   color: var(--ink-soft);
 }
-.section-label span {
-  display: grid;
-  place-items: center;
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--edge);
-  background: var(--glass);
-  color: var(--violet);
-  font-size: 0.68rem;
-  letter-spacing: 0.02em;
-}
 
 .section-sub {
   color: var(--ink-soft);
@@ -329,6 +318,12 @@ kbd {
 }
 .cursor.is-hover .cursor-dot { width: 16px; height: 16px; background: var(--lav-400); }
 .cursor.is-hover .cursor-halo { width: 420px; height: 420px; }
+
+/* Hide the native mouse arrow ONLY when the custom glow cursor is active.
+   The glow circle itself is untouched. While the intro curtain is up
+   (body.is-loading) the native cursor stays visible so the page is usable. */
+body.has-custom-cursor:not(.is-loading),
+body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
 
 .scroll-progress {
   position: fixed;
@@ -755,7 +750,7 @@ body.menu-open .mobile-menu-eyebrow {
 
 .mobile-menu-link {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 1rem;
   padding: 1.05rem 1.25rem;
@@ -807,12 +802,6 @@ body.menu-open .mobile-menu-link {
   outline: none;
 }
 
-.mm-num {
-  font-size: 0.7rem;
-  letter-spacing: 0.22em;
-  color: var(--violet);
-  font-weight: 500;
-}
 .mm-label {
   font-size: inherit;
   letter-spacing: inherit;
@@ -1035,8 +1024,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   text-transform: uppercase;
   color: var(--ink-soft);
 }
-.hero-index { display: inline-flex; align-items: center; gap: 0.6rem; }
-.hero-index i { width: 34px; height: 1px; background: linear-gradient(90deg, var(--lav-400), transparent); }
 .hero-hint { opacity: 0.55; font-size: 0.64rem; }
 
 .scroll-cue {
@@ -1221,16 +1208,12 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   pointer-events: none;
 }
 
-/* Name + role beneath the photo */
+/* Name + role beneath the photo — background box removed */
 .profile-meta {
   display: grid;
   gap: 0.35rem;
   padding: 1.15rem 1.35rem 1.4rem;
   padding-right: 4.5rem; /* leaves room for the "Flip" hint at bottom-right */
-  border-top: 1px solid rgba(255,255,255,0.55);
-  background: linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.82) 100%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   text-align: left;
 }
 
@@ -1247,10 +1230,20 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   color: transparent;
   animation: holo-pan 7s linear infinite;
 }
+
+/* Typography matched to the "digital world." emphasis style */
 .profile-role {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 400;
   font-size: var(--step--1);
   line-height: 1.4;
-  color: var(--ink-soft);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  background: linear-gradient(100deg, var(--violet) 0%, var(--lav-400) 55%, var(--violet-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* Pill "01" sits on top of the photo — added a chip bg so it stays readable */
@@ -1469,19 +1462,6 @@ a.project-media:focus-visible img {
   transform: scale(1.07);
 }
 
-.project-index {
-  position: absolute;
-  top: 1rem; left: 1.1rem;
-  padding: 0.3rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  color: var(--violet-deep);
-}
 .project-gloss {
   position: absolute;
   inset: 0;
@@ -1698,7 +1678,7 @@ a.project-media:focus-visible img {
 }
 
 /* ---------------------------------------------------------------
-   11. SKILLS CONSTELLATION
+   11. SKILLS CONSTELLATION (Capabilities)
    --------------------------------------------------------------- */
 .skills { text-align: center; }
 .skills .section-label { display: inline-flex; }
@@ -1709,7 +1689,7 @@ a.project-media:focus-visible img {
   margin-top: clamp(2rem, 6vw, 4rem);
   height: clamp(460px, 62vh, 640px);
   perspective: 1100px;
-  text-align: left;
+  text-align: center;
 }
 .constellation-lines {
   position: absolute;
@@ -1749,7 +1729,7 @@ a.project-media:focus-visible img {
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.85);
-  text-align: left;
+  text-align: center;
   transform: translate(-50%, -50%) scale(var(--s, 1));
   transform-origin: 50% 50%;
   transition: border-radius 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out), background 0.4s ease, padding 0.4s var(--ease-out);
@@ -1893,17 +1873,6 @@ a.project-media:focus-visible img {
 }
 .tl-card p { margin-top: 0.6rem; max-width: 54ch; color: var(--ink-soft); }
 .tl-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.1rem; }
-.tl-index {
-  position: absolute;
-  top: 1.4rem; right: 1.8rem;
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 4rem);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.06em;
-  color: rgba(108, 74, 182, 0.08);
-  pointer-events: none;
-}
 .tl-tags li {
   padding: 0.28rem 0.75rem;
   border-radius: 999px;
@@ -1990,16 +1959,6 @@ a.project-media:focus-visible img {
   color: var(--ink-soft);
   font-size: var(--step--1);
   line-height: 1.6;
-}
-.service-num {
-  position: absolute;
-  right: 1.4rem; top: 1rem;
-  font-family: var(--font-display);
-  font-size: 2.6rem;
-  font-weight: 500;
-  letter-spacing: -0.06em;
-  color: rgba(108,74,182,0.07);
-  line-height: 1;
 }
 
 /* ---------------------------------------------------------------
@@ -2404,7 +2363,7 @@ a.project-media:focus-visible img {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
     gap: 0.7rem;
-    text-align: left;
+    text-align: center;
   }
   .skill-list li { position: static; inset: auto; pointer-events: auto; }
   .skill {
@@ -2462,12 +2421,10 @@ a.project-media:focus-visible img {
   .timeline-line { left: 0.4rem; }
   .tl-node { left: -1.1rem; }
   .tl-card { padding: 1.1rem; border-radius: var(--radius); }
-  .tl-index { font-size: 2.2rem; right: 1.1rem; top: 0.9rem; }
 
   .service-card { min-height: 200px; padding: 1.35rem; }
   .service-icon { width: 52px; height: 52px; border-radius: 16px; }
   .service-icon svg { width: 24px; height: 24px; }
-  .service-num { font-size: 2.2rem; right: 1.1rem; top: 0.85rem; }
 
   .quote-card { padding: 1.4rem; border-radius: var(--radius); }
   .quote-card blockquote p { font-size: var(--step-1); line-height: 1.4; }
@@ -2506,7 +2463,6 @@ a.project-media:focus-visible img {
   .round-btn svg { width: 17px; height: 17px; }
 
   .section-label { font-size: 0.68rem; letter-spacing: 0.18em; }
-  .section-label span { width: 26px; height: 26px; font-size: 0.62rem; }
 
   .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1rem; }
   .about-stats dt { font-size: 0.62rem; letter-spacing: 0.14em; }
@@ -2538,7 +2494,6 @@ a.project-media:focus-visible img {
     min-height: 56px;
     gap: 0.85rem;
   }
-  .mm-num { font-size: 0.66rem; letter-spacing: 0.2em; }
   .mm-arrow { width: 32px; height: 32px; }
   .mm-arrow svg { width: 13px; height: 13px; }
 }

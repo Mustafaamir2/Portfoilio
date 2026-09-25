@@ -244,6 +244,11 @@
       return;
     }
 
+    /* Flag the body so CSS can hide the native arrow while this custom
+       glow cursor is the one on screen. The halo/dot logic below is
+       unchanged — only the native arrow is hidden. */
+    body.classList.add("has-custom-cursor");
+
     var dot = $(".cursor-dot", el);
     var halo = $(".cursor-halo", el);
     var pos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
