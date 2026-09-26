@@ -1200,11 +1200,9 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   padding: 0;
   grid-template-rows: 1fr auto;
   align-content: stretch;
-  border: 1px solid var(--glass-line);
   background: linear-gradient(150deg, rgba(255,255,255,0.86) 0%, rgba(244,240,255,0.6) 50%, rgba(200,182,255,0.44) 100%);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.9);
 }
 
 /* The photo plate — fills the top of the card, clipped by the card's radius */
@@ -1227,17 +1225,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   will-change: transform;
 }
 .profile-card:hover .profile-photo img { transform: scale(1.06); }
-/* Gradient scrim at the bottom so the meta text always reads cleanly */
-.profile-photo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg,
-    rgba(27,20,54,0) 55%,
-    rgba(27,20,54,0.10) 78%,
-    rgba(27,20,54,0.28) 100%);
-  pointer-events: none;
-}
 
 /* Name + role beneath the photo — background box removed */
 .profile-meta {
