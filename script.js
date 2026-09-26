@@ -757,15 +757,33 @@
       if (moved > 8) { e.preventDefault(); e.stopPropagation(); }
     }, true);
 
+    /* ------------------------------------------------------------------
+       Wheel behaviour — FIXED
+       Vertical wheel now lets the page scroll normally (up / down) so the
+       gallery never traps the viewport. Horizontal intent (trackpad swipe
+       or Shift + wheel) still travels the gallery left / right.
+       ------------------------------------------------------------------ */
     rail.addEventListener("wheel", function (e) {
       if (state.coarse || e.ctrlKey) return;
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+
+      var horizontalIntent =
+        Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey;
+
+      /* Vertical wheel → hand the event back to the page. */
+      if (!horizontalIntent) return;
+
       var scrollable = rail.scrollWidth - rail.clientWidth;
+      if (scrollable <= 0) return;
+
       var atStart = rail.scrollLeft <= 1;
       var atEnd = rail.scrollLeft >= scrollable - 1;
-      if ((e.deltaY < 0 && atStart) || (e.deltaY > 0 && atEnd)) return;
+      var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+
+      /* Let the page scroll when the gallery has no room left to move. */
+      if ((delta < 0 && atStart) || (delta > 0 && atEnd)) return;
+
       e.preventDefault();
-      rail.scrollLeft += e.deltaY;
+      rail.scrollLeft += delta;
     }, { passive: false });
 
     perspective();
