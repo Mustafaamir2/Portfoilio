@@ -33,10 +33,15 @@
      ----------------------------------------------------------------- */
   var TIER = (function () {
     if (state.reduced) return 1;
-    if (state.coarse || state.mobile) return 0;
-    var cores = navigator.hardwareConcurrency || 6;
-    var mem   = navigator.deviceMemory || 6;
+    var cores = navigator.hardwareConcurrency || 4;
+    var mem   = navigator.deviceMemory || 4;
     var dpr   = window.devicePixelRatio || 1;
+    if (state.coarse || state.mobile) {
+      /* Phones still get the glass/orbit look (tier 1) unless the
+         device genuinely can't afford it. */
+      if (cores <= 3 || mem <= 2) return 0;
+      return 1;
+    }
     if (cores <= 4 || mem <= 4) return 1;
     if (cores <= 6 || dpr >= 2.5) return 2;
     return 3;
@@ -551,8 +556,10 @@
       sections.forEach(function (s) { obs.observe(s); });
     }
 
-    function isDesktop() { return !state.mobile; }
+    function isDesktop() { return !state.mobile && !state.coarse; }
+    var pinTimer = null;
     function expandIsland() {
+      if (pinTimer) { window.clearTimeout(pinTimer); pinTimer = null; }
       if (!lastCollapsed) return;
       lastCollapsed = false;
       shell.classList.remove("is-collapsed");
@@ -563,37 +570,75 @@
       lastCollapsed = true;
       shell.classList.add("is-collapsed");
     }
+    /* Touch/mobile: tapping the shrunk island re-opens it. It stays
+       open until either a moment passes with no further scrolling,
+       or the user actually scrolls again — then it shrinks back down
+       (same idea as hover on desktop, tap-driven since there is no
+       hover on touch). */
+    var pinScrollY = 0;
+    var PIN_SCROLL_SLACK = 26;
+    function pinExpanded() {
+      pinScrollY = window.scrollY;
+      expandIsland();
+      pinTimer = window.setTimeout(function () {
+        pinTimer = null;
+        if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
+      }, 2600);
+    }
 
     window.addEventListener("scroll", throttleFrame(function () {
-      if (!isDesktop()) return;
       var y = window.scrollY;
-      if (y <= RE_OPEN_AT) expandIsland();
-      else if (y > SCROLL_TRIGGER) {
-        if (!shell.matches(":hover") && !shell.contains(doc.activeElement)) collapseIsland();
+      if (y <= RE_OPEN_AT) { expandIsland(); return; }
+      if (y > SCROLL_TRIGGER) {
+        if (isDesktop()) {
+          if (!shell.matches(":hover") && !shell.contains(doc.activeElement)) collapseIsland();
+        } else if (pinTimer) {
+          /* Just tapped open. Touch platforms keep firing scroll events
+             while momentum settles, and a tap itself can nudge the page
+             a pixel or two — collapsing on those made the tap look like
+             it did nothing. Only a deliberate scroll closes it again. */
+          if (Math.abs(y - pinScrollY) > PIN_SCROLL_SLACK) {
+            window.clearTimeout(pinTimer);
+            pinTimer = null;
+            collapseIsland();
+          }
+        } else {
+          collapseIsland();
+        }
       }
     }), { passive: true });
 
-    if (isDesktop()) {
-      shell.addEventListener("pointerenter", function () {
-        if (window.scrollY > RE_OPEN_AT) expandIsland();
-      });
-      shell.addEventListener("pointerleave", function () {
-        if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
-      });
-      shell.addEventListener("focusin", function () {
-        if (window.scrollY > RE_OPEN_AT) expandIsland();
-      });
-      shell.addEventListener("focusout", function (e) {
-        if (shell.contains(e.relatedTarget)) return;
-        if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
-      });
-    }
+    /* Hover only means anything with a fine pointer, but these are
+       checked at call time, not bound once at load: the window can be
+       resized across the breakpoint after startup. */
+    shell.addEventListener("pointerenter", function () {
+      if (isDesktop() && window.scrollY > RE_OPEN_AT) expandIsland();
+    });
+    shell.addEventListener("pointerleave", function () {
+      if (isDesktop() && window.scrollY > SCROLL_TRIGGER) collapseIsland();
+    });
+    shell.addEventListener("focusin", function () {
+      if (window.scrollY > RE_OPEN_AT) expandIsland();
+    });
+    shell.addEventListener("focusout", function (e) {
+      if (shell.contains(e.relatedTarget)) return;
+      if (isDesktop() && window.scrollY > SCROLL_TRIGGER) collapseIsland();
+    });
+
+    /* Bound unconditionally. It used to be attached only when the page
+       *loaded* narrow, so a window resized down to phone width never
+       got a working tap target. Tapping a shrunk island should open it
+       on any device anyway. */
+    shell.addEventListener("click", function (e) {
+      if (!shell.classList.contains("is-collapsed")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      pinExpanded();
+    });
 
     window.addEventListener("resize", throttleFrame(function () {
-      if (state.mobile) {
-        lastCollapsed = false;
-        shell.classList.remove("is-collapsed");
-      } else if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
+      if (window.scrollY <= RE_OPEN_AT) expandIsland();
+      else if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
       else expandIsland();
     }));
 
@@ -693,24 +738,67 @@
     var next = $("#work-next");
     if (!rail || !track) return;
 
+    /* Non-stop 360°: clone the whole set once before and once after the
+       real cards, so there's always a buffer to scroll into on either
+       side. We start centered in the real (middle) copy, and whenever
+       drift carries the "current" card into a clone copy, we silently
+       jump the scroll position back by one set-width — same visual
+       card, no reset-to-start jump, no dead end either direction. */
+    var realCards = $$(".project", track);
+    var N = realCards.length;
+    function makeClone(li) {
+      var clone = li.cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      clone.setAttribute("inert", "");
+      $$("a, button", clone).forEach(function (el) { el.tabIndex = -1; });
+      return clone;
+    }
+    if (N > 1) {
+      realCards.forEach(function (li) { track.appendChild(makeClone(li)); });
+      for (var ci = realCards.length - 1; ci >= 0; ci--) {
+        track.insertBefore(makeClone(realCards[ci]), track.firstChild);
+      }
+    }
+
     var cards = $$(".project", track);
     var cardEls = cards.map(function (c) { return c.firstElementChild; });
-    var current = 0;
+    var current = N > 1 ? N : 0;
     var galleryVisible = false;
+    var recenterTimer = null;
+
+    /* Card centres cached in the scroller's own coordinate space (the
+       same basis goTo uses). Re-measuring every card with
+       getBoundingClientRect on each scroll frame meant ~39 forced
+       layout reads per frame once the loop tripled the card count —
+       enough to cost frames on its own. Positions only change on
+       resize, so measure there instead. */
+    var geo = [];
+    function measure() {
+      geo.length = 0;
+      for (var i = 0; i < cards.length; i++) {
+        geo.push(cards[i].offsetLeft + cards[i].offsetWidth / 2);
+      }
+    }
 
     function perspective() {
-      var railBox = rail.getBoundingClientRect();
-      var centre = railBox.left + railBox.width / 2;
-      var half = railBox.width / 2;
+      if (geo.length !== cards.length) measure();
+      var half = rail.clientWidth / 2;
+      var centre = rail.scrollLeft + half;
       var closest = 0, closestDistance = Infinity;
 
       for (var i = 0; i < cards.length; i++) {
-        var box = cards[i].getBoundingClientRect();
-        var itemCentre = box.left + box.width / 2;
-        var distance = itemCentre - centre;
+        var distance = geo[i] - centre;
         var p = clamp(distance / half, -1, 1);
         var card = cardEls[i];
-        if (card) card.style.setProperty("--p", p.toFixed(3));
+        if (card) {
+          card.style.setProperty("--p", p.toFixed(3));
+          /* Frosted glass is by far the most expensive thing on this
+             page, and the loop keeps 3 copies of every card in the DOM.
+             Only the handful actually on screen get a live backdrop
+             blur; the rest fall back to a plain translucent panel that
+             looks the same at that distance and costs nothing. */
+          card.classList.toggle("is-near", (distance < 0 ? -distance : distance) < half * 1.1);
+        }
         var absDist = distance < 0 ? -distance : distance;
         if (absDist < closestDistance) {
           closestDistance = absDist;
@@ -719,15 +807,44 @@
       }
 
       current = closest;
-      var scrollable = rail.scrollWidth - rail.clientWidth;
       if (fill) {
-        var ratio = scrollable > 0 ? rail.scrollLeft / scrollable : 0;
-        var width = 100 / Math.max(cards.length, 1);
+        /* Infinite mode: progress reflects position within one lap of
+           the real set (`current % N`), not raw scroll distance across
+           the tripled track, which would make the bar nearly invisible. */
+        var segCount = N > 1 ? N : cards.length;
+        var lapIndex = N > 1 ? ((current % N) + N) % N : current;
+        var ratio = segCount > 1 ? lapIndex / (segCount - 1) : 0;
+        var width = 100 / Math.max(segCount, 1);
         fill.style.width = width + "%";
         fill.style.transform = "translateX(" + (ratio * (100 - width) / width * 100).toFixed(2) + "%)";
       }
-      if (prev) prev.disabled = rail.scrollLeft <= 2;
-      if (next) next.disabled = rail.scrollLeft >= scrollable - 2;
+      /* Non-stop: there's always another card in either direction. */
+      if (prev) prev.disabled = N > 1 ? false : rail.scrollLeft <= 2;
+      if (next) next.disabled = N > 1 ? false : rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 2;
+
+      if (N > 1) queueRecenterCheck();
+    }
+
+    /* If drift carries the active card into a clone copy, wait for
+       scrolling to actually settle, then jump the scroll position back
+       by exactly one set-width — same card visually, so it's invisible,
+       and it means there's no dead end in either direction. */
+    function queueRecenterCheck() {
+      if (recenterTimer) window.clearTimeout(recenterTimer);
+      recenterTimer = window.setTimeout(function () {
+        recenterTimer = null;
+        if (dragging) return;
+        var shift = 0;
+        if (current < N * 0.5) shift = N;
+        else if (current >= N * 2.5) shift = -N;
+        if (!shift) return;
+        var item = cards[current + shift];
+        if (!item) return;
+        var left = item.offsetLeft - (rail.clientWidth - item.offsetWidth) / 2;
+        rail.scrollLeft = left;
+        current += shift;
+        perspective();
+      }, 160);
     }
 
     var onScroll = throttleFrame(function () {
@@ -735,8 +852,12 @@
     });
     rail.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", throttleFrame(function () {
+      measure();
       if (galleryVisible) perspective();
     }));
+    /* Late-loading images can shift the track, so re-measure once
+       everything has settled. */
+    window.addEventListener("load", function () { measure(); perspective(); });
 
     if ("IntersectionObserver" in window) {
       var gObs = new IntersectionObserver(function (entries) {
@@ -748,11 +869,12 @@
       galleryVisible = true;
     }
 
-    function goTo(index) {
+    function goTo(index, instant) {
       var item = cards[clamp(index, 0, cards.length - 1)];
       if (!item) return;
       var left = item.offsetLeft - (rail.clientWidth - item.offsetWidth) / 2;
-      rail.scrollTo({ left: left, behavior: prefersStillness() ? "auto" : "smooth" });
+      if (instant || prefersStillness()) rail.scrollLeft = left;
+      else rail.scrollTo({ left: left, behavior: "smooth" });
     }
 
     if (prev) prev.addEventListener("click", function () { goTo(current - 1); });
@@ -816,8 +938,36 @@
       rail.scrollLeft += delta;
     }, { passive: false });
 
+    /* Start centered in the real (middle) copy, instantly — no smooth
+       scroll animation on page load. */
+    if (N > 1) goTo(current, true);
+    measure();
     perspective();
-    window.setTimeout(perspective, 400);
+    window.setTimeout(function () { measure(); perspective(); }, 400);
+
+    /* Fast, continuous, non-stop: always steps to the next card, never
+       wraps back to a "start" — queueRecenterCheck() (in perspective())
+       silently keeps it inside the buffered clone range forever. */
+    var autoplayTimer = null;
+    var AUTOPLAY_MS = 1700;
+    function stopAutoplay() {
+      if (autoplayTimer) { window.clearInterval(autoplayTimer); autoplayTimer = null; }
+    }
+    function startAutoplay() {
+      if (prefersStillness() || autoplayTimer) return;
+      autoplayTimer = window.setInterval(function () {
+        if (!galleryVisible || dragging || doc.hidden) return;
+        goTo(current + 1);
+      }, AUTOPLAY_MS);
+    }
+    rail.addEventListener("pointerenter", stopAutoplay);
+    rail.addEventListener("pointerleave", startAutoplay);
+    rail.addEventListener("pointerdown", stopAutoplay);
+    rail.addEventListener("wheel", stopAutoplay, { passive: true });
+    rail.addEventListener("keydown", stopAutoplay);
+    if (prev) prev.addEventListener("click", stopAutoplay);
+    if (next) next.addEventListener("click", stopAutoplay);
+    startAutoplay();
   })();
 
   /* ------------------------------------------------------------------
@@ -1256,8 +1406,10 @@
       } catch (err) { return null; }
       if (!renderer.getContext()) return null;
 
-      /* Aggressive DPR caps — a huge win on HiDPI screens */
-      var cap = TIER === 0 ? 1 : TIER === 1 ? 1.25 : TIER === 2 ? 1.5 : 2;
+      /* Aggressive DPR caps — a huge win on HiDPI screens. Fill-rate on
+         phone GPUs is the real bottleneck, so touch/mobile stays capped
+         low no matter which tier the CPU heuristic landed on. */
+      var cap = (state.mobile || state.coarse) ? 1.25 : TIER === 1 ? 1.5 : TIER === 2 ? 1.75 : 2;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cap));
       renderer.setClearAlpha(0);
       renderer.outputEncoding = THREE.sRGBEncoding;
@@ -1275,6 +1427,14 @@
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      /* A fixed vertical FOV frames the same amount of world height on
+         every screen, but on a narrow/portrait canvas that same height
+         maps to far less *width* — so the rings and drifting shards
+         (which reach out ~3–4 world units from center) get cropped off
+         the sides. Dolly back proportionally so the whole scene stays
+         inside frame instead of only the core sphere showing. */
+      var aspect = w / h;
+      camera.userData.zoomOut = aspect < 0.75 ? Math.min(0.75 / aspect, 1.85) : 1;
     }
 
     function whenVisible(canvas, onChange) {
@@ -1300,70 +1460,113 @@
       var world = new THREE.Group();
       scene.add(world);
 
-      /* Segments scale with device tier */
-      var sphereSeg = TIER === 0 ? 32 : TIER === 1 ? 40 : TIER === 2 ? 56 : 72;
-      var torusSeg  = TIER === 0 ? 48 : TIER === 1 ? 64 : TIER === 2 ? 100 : 140;
-      var particles = TIER === 0 ? 80 : TIER === 1 ? 180 : TIER === 2 ? 400 : 600;
-      var shardCount = TIER === 0 ? 4 : TIER === 1 ? 6 : TIER === 2 ? 10 : 12;
+      /* Segments scale with device tier — phones stay at the cheap
+         end of the scale regardless of tier (cores/mem alone aren't
+         a reliable signal there), so the glass look stays but the
+         geometry cost that actually causes jank doesn't creep up. */
+      var onPhone = state.mobile || state.coarse;
+      var sphereSeg = onPhone ? 32 : TIER === 1 ? 40 : TIER === 2 ? 56 : 72;
+      var torusSeg  = onPhone ? 48 : TIER === 1 ? 64 : TIER === 2 ? 100 : 140;
+      var particles = onPhone ? 90 : TIER === 1 ? 180 : TIER === 2 ? 400 : 600;
+      var shardCount = onPhone ? 5 : TIER === 1 ? 6 : TIER === 2 ? 10 : 12;
 
-      /* Orb — transmission only on high-end (it doubles rendering cost) */
+      /* Orb — real `transmission` is deliberately NOT used, on any
+         device. It resolves by rendering the scene to an internal
+         render target and refracting through it, and in practice that
+         resolve is unstable frame-to-frame (skips/recomputes on its
+         own schedule) — that's the exact "sometimes purple, sometimes
+         white" flicker this was causing on desktop. This flat
+         clearcoat + tinted-glass material has no such render-target
+         dependency, so it draws the same way every single frame. */
+      /* Glassmorphism, not "barely there": a frosted-glass shell you can
+         actually see (soft body + a clear specular edge), not a nearly
+         invisible film. Opacity carries the frosted-panel look; the
+         core stays readable through it because the core itself is a
+         strongly saturated, emissive color (see coreMat below), not
+         because the shell is thin. */
       var orbMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
+        color: 0xe4d6ff,
         metalness: 0.05,
-        roughness: 0.08,
-        clearcoat: 1,
-        clearcoatRoughness: 0.08,
-        envMapIntensity: 1.1,
+        roughness: 0.22,
+        clearcoat: 0.65,
+        clearcoatRoughness: 0.15,
+        envMapIntensity: 0.55,
         transparent: true,
-        opacity: TIER >= 2 ? 0.92 : 0.82
+        opacity: 0.5
       });
-      if (TIER >= 2) {
-        orbMaterial.transmission = 1;
-        orbMaterial.thickness = 1.6;
-        orbMaterial.ior = 1.46;
-        orbMaterial.attenuationColor = new THREE.Color(0xc8b6ff);
-        orbMaterial.attenuationDistance = 2.4;
-      }
-      if ("iridescence" in orbMaterial && TIER >= 2) {
-        orbMaterial.iridescence = 0.5;
-        orbMaterial.iridescenceIOR = 1.32;
-      }
 
       var orb = new THREE.Mesh(new THREE.SphereGeometry(1.45, sphereSeg, sphereSeg), orbMaterial);
       world.add(orb);
 
+      /* Core — a solid faceted violet gem. High metalness here means
+         its color comes mostly from *reflected* environment light
+         rather than its own tint, which is why it was reading as
+         washed-out white under a bright env; low metalness + emissive
+         keeps it reliably purple regardless of lighting. */
       var coreMat = new THREE.MeshPhysicalMaterial({
-        color: 0x8a67d6, metalness: 0.9, roughness: 0.2,
-        envMapIntensity: 1.3, flatShading: true
+        color: 0x6636cf, metalness: 0.15, roughness: 0.18,
+        clearcoat: 0.6, clearcoatRoughness: 0.2,
+        emissive: 0x3a1f7a, emissiveIntensity: 0.7,
+        envMapIntensity: 0.85, flatShading: true
       });
-      var core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.62, 0), coreMat);
+      /* Sized to fill most of the shell's diameter (reference: the gem
+         reads as the dominant shape, not a small object floating in a
+         mostly-empty sphere). */
+      var core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.92, 0), coreMat);
       world.add(core);
 
       var shellMat = new THREE.MeshBasicMaterial({
         color: 0xb89cff, wireframe: true, transparent: true, opacity: 0.32
       });
-      var innerShell = new THREE.Mesh(new THREE.IcosahedronGeometry(0.95, 1), shellMat);
+      var innerShell = new THREE.Mesh(new THREE.IcosahedronGeometry(1.18, 1), shellMat);
       world.add(innerShell);
 
       /* Rings — one shared material, per-ring clones removed */
       var rings = new THREE.Group();
       var ringMaterial = new THREE.MeshStandardMaterial({
-        color: 0xc8b6ff, emissive: 0x8a6ad0, emissiveIntensity: 0.5,
-        metalness: 0.9, roughness: 0.24, transparent: true, opacity: 0.9
+        color: 0x8158d6, emissive: 0x5f35b8, emissiveIntensity: 0.9,
+        metalness: 0.4, roughness: 0.28, transparent: true, opacity: 0.95
       });
       [
-        { r: 2.15, t: 0.012, rx: Math.PI / 2.2, ry: 0.2 },
-        { r: 2.55, t: 0.008, rx: Math.PI / 1.7, ry: -0.5 },
-        { r: 2.95, t: 0.006, rx: Math.PI / 2.9, ry: 0.9 }
+        { r: 2.15, t: 0.016, rx: Math.PI / 2.2, ry: 0.2 },
+        { r: 2.55, t: 0.012, rx: Math.PI / 1.7, ry: -0.5 },
+        { r: 2.95, t: 0.009, rx: Math.PI / 2.9, ry: 0.9 }
       ].forEach(function (spec) {
         var ring = new THREE.Mesh(
           new THREE.TorusGeometry(spec.r, spec.t, 6, torusSeg),
           ringMaterial
         );
         ring.rotation.set(spec.rx, spec.ry, 0);
+        ring.userData.radius = spec.r;
         rings.add(ring);
       });
       world.add(rings);
+
+      /* Orbit beads — small glossy spheres riding each ring, like
+         electrons on an atom (the reference "mirror" look). */
+      var beadGeo = new THREE.SphereGeometry(0.075, TIER === 0 ? 12 : 20, TIER === 0 ? 12 : 20);
+      var beadMat = new THREE.MeshPhysicalMaterial({
+        color: 0x7d54d6, metalness: 0.4, roughness: 0.1,
+        clearcoat: 1, clearcoatRoughness: 0.06,
+        envMapIntensity: 1.4, emissive: 0x50309e, emissiveIntensity: 0.35
+      });
+      var beads = [];
+      rings.children.forEach(function (ring, ringIndex) {
+        var beadCount = TIER === 0 ? 1 : 2;
+        for (var b = 0; b < beadCount; b++) {
+          var bead = new THREE.Mesh(beadGeo, beadMat);
+          /* A clean, deliberate stagger — each ring's beads start
+             evenly spaced, and each ring is offset from the last by a
+             fixed sixth-turn, rather than an arbitrary raw-radian
+             offset. Speed steps up predictably per ring/bead index. */
+          bead.userData.angle = (b / beadCount) * Math.PI * 2 + ringIndex * (Math.PI / 3);
+          bead.userData.speed = 0.35 + ringIndex * 0.12 + b * 0.06;
+          bead.userData.ring = ring;
+          bead.position.set(Math.cos(bead.userData.angle) * ring.userData.radius, Math.sin(bead.userData.angle) * ring.userData.radius, 0);
+          ring.add(bead);
+          beads.push(bead);
+        }
+      });
 
       /* Shards — one shared material, shared geometries */
       var shards = new THREE.Group();
@@ -1372,23 +1575,35 @@
         new THREE.TetrahedronGeometry(0.18, 0),
         new THREE.IcosahedronGeometry(0.14, 0)
       ];
+      /* Same fix as the orb/core/rings: high metalness + a pale base
+         color reads as washed-out white under a bright env regardless
+         of intent, so keep metalness/env reflectance moderate and let
+         a real violet tint carry the color. */
       var shardMat = new THREE.MeshPhysicalMaterial({
-        color: 0xe9e1ff, metalness: 0.35, roughness: 0.14,
-        clearcoat: 1, envMapIntensity: 1.4, transparent: true, opacity: 0.92
+        color: 0xa588e8, metalness: 0.2, roughness: 0.16,
+        clearcoat: 0.7, clearcoatRoughness: 0.15,
+        emissive: 0x4a2a94, emissiveIntensity: 0.18,
+        envMapIntensity: 0.6, transparent: true, opacity: 0.92
       });
+      /* Evenly spaced, deterministic placement — three clean orbit
+         bands (radius/height/speed all step by index) instead of
+         scattering shards at random positions and rates, which read
+         as clutter rather than an orbiting system. */
       for (var s = 0; s < shardCount; s++) {
         var mesh = new THREE.Mesh(shardGeoms[s % shardGeoms.length], shardMat);
-        var angle = (s / shardCount) * Math.PI * 2 + Math.random() * 0.4;
-        var radius = 2.3 + Math.random() * 1.9;
+        var band = s % 3;
+        var angle = (s / shardCount) * Math.PI * 2;
+        var radius = 2.4 + band * 0.75;
+        var height = (band - 1) * 1.3;
         mesh.position.set(
           Math.cos(angle) * radius,
-          (Math.random() - 0.5) * 3.4,
+          height,
           Math.sin(angle) * radius * 0.7
         );
-        mesh.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
-        mesh.userData.spin = 0.15 + Math.random() * 0.35;
-        mesh.userData.bob = 0.4 + Math.random() * 0.8;
-        mesh.userData.phase = Math.random() * Math.PI * 2;
+        mesh.rotation.set(angle * 0.6, angle * 0.9, angle * 0.3);
+        mesh.userData.spin = 0.2 + band * 0.08;
+        mesh.userData.bob = 0.5 + band * 0.15;
+        mesh.userData.phase = angle;
         mesh.userData.baseY = mesh.position.y;
         shards.add(mesh);
       }
@@ -1411,11 +1626,15 @@
       var particlePoints = new THREE.Points(particleGeo, particleMat);
       scene.add(particlePoints);
 
-      scene.add(new THREE.HemisphereLight(0xffffff, 0xd9ccff, 0.9));
-      var key = new THREE.DirectionalLight(0xffffff, 1.4);
+      /* Slightly less hot than before — a bright white key light is
+         what pushes any reflective material toward washed-out white
+         regardless of its own tint. Toned down, uniformly, for every
+         device (same numbers everywhere = same render everywhere). */
+      scene.add(new THREE.HemisphereLight(0xf3edff, 0xc4a8ff, 0.75));
+      var key = new THREE.DirectionalLight(0xffffff, 1.1);
       key.position.set(4, 6, 5);
       scene.add(key);
-      var rim = new THREE.DirectionalLight(0xc8b6ff, 0.8);
+      var rim = new THREE.DirectionalLight(0xa07ce0, 0.9);
       rim.position.set(-5, -2, -4);
       scene.add(rim);
       var cursorLight = new THREE.PointLight(0xb89cff, 2.2, 14, 2);
@@ -1456,16 +1675,29 @@
 
       if (prefersStillness()) {
         world.rotation.set(0.2, 0.4, 0);
+        camera.position.z = 6.4 * (camera.userData.zoomOut || 1);
         renderer.render(scene, camera);
         return;
       }
 
       var elapsed = 0;
       var particleArr = particleGeo.attributes.position.array;
+      var degraded = false;
+      var frameSkip = false;
 
       addTicker(function (delta) {
         if (!visible || doc.hidden) return;
         elapsed += delta;
+
+        /* Adaptive fallback: our device-tier guess is a heuristic, not
+           a measurement. If real frame times say otherwise once things
+           have settled, actually cut cost instead of staying "pretty
+           but laggy". */
+        if (!degraded && elapsed > 2.5 && measuredFps < 33) {
+          degraded = true;
+          renderer.setPixelRatio(1);
+        }
+        frameSkip = degraded && Math.round(elapsed * 60) % 2 === 0;
 
         aim.x = (state.pointer.y - 0.5) * 0.5;
         aim.y = (state.pointer.x - 0.5) * 0.9;
@@ -1489,6 +1721,13 @@
           rings.children[ri].rotation.z = elapsed * (0.12 + ri * 0.05) * (ri % 2 ? -1 : 1);
         }
 
+        for (var bi = 0; bi < beads.length; bi++) {
+          var bead = beads[bi];
+          var a = bead.userData.angle + elapsed * bead.userData.speed;
+          var rad = bead.userData.ring.userData.radius;
+          bead.position.set(Math.cos(a) * rad, Math.sin(a) * rad, 0);
+        }
+
         for (var si = 0; si < shards.children.length; si++) {
           var shard = shards.children[si];
           shard.rotation.x += delta * shard.userData.spin;
@@ -1496,18 +1735,21 @@
           shard.position.y = shard.userData.baseY + Math.sin(elapsed * shard.userData.bob + shard.userData.phase) * 0.22;
         }
 
-        for (var pi = 0; pi < particles; pi++) {
-          particleArr[pi * 3 + 1] += speeds[pi] * delta;
-          if (particleArr[pi * 3 + 1] > 5.5) particleArr[pi * 3 + 1] = -5.5;
+        if (!frameSkip) {
+          for (var pi = 0; pi < particles; pi++) {
+            particleArr[pi * 3 + 1] += speeds[pi] * delta * (degraded ? 2 : 1);
+            if (particleArr[pi * 3 + 1] > 5.5) particleArr[pi * 3 + 1] = -5.5;
+          }
+          particleGeo.attributes.position.needsUpdate = true;
         }
-        particleGeo.attributes.position.needsUpdate = true;
         particlePoints.rotation.y = elapsed * 0.02;
 
         cursorLight.position.x = lerp(cursorLight.position.x, (state.pointer.x - 0.5) * 9, 0.06);
         cursorLight.position.y = lerp(cursorLight.position.y, -(state.pointer.y - 0.5) * 6, 0.06);
 
         var progress = clamp(state.scrollY / Math.max(window.innerHeight, 1), 0, 1);
-        camera.position.z = 6.4 + progress * 1.6;
+        var zoomOut = camera.userData.zoomOut || 1;
+        camera.position.z = (6.4 + progress * 1.6) * zoomOut;
         camera.position.y = progress * 0.7;
         world.position.y = -progress * 0.6;
         camera.lookAt(0, world.position.y * 0.4, 0);
@@ -1520,9 +1762,11 @@
     (function contactScene() {
       var canvas = $("#contact-canvas");
       if (!canvas) return;
-      /* Skip entirely on the lowest tier — a static blurred background
-         from CSS is used instead (saves an entire WebGL context). */
-      if (TIER === 0) return;
+      /* Skip entirely on phones and the lowest tier — a static CSS
+         gradient is used instead. Running a second full WebGL scene
+         concurrently with the hero one is real, avoidable lag on a
+         phone GPU, for a section that's purely decorative background. */
+      if (TIER === 0 || state.mobile || state.coarse) return;
 
       var renderer = makeRenderer(canvas);
       if (!renderer) return;

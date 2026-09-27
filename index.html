@@ -20,7 +20,8 @@
 <meta name="twitter:description" content="Interactive 3D portfolio of a creative designer, developer and digital experience creator." />
 <meta name="twitter:image" content="assets/project-genesis.jpg" />
 
-<link rel="icon" href="assets/favicon.ico" sizes="any" />
+<link rel="icon" href="assets/logo.png" type="image/png" />
+<link rel="apple-touch-icon" href="assets/logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
@@ -33,6 +34,7 @@
   "@type": "Person",
   "name": "Mustafa creates",
   "jobTitle": "Creative Designer, Developer & Digital Experience Creator",
+  "image": "assets/logo.png",
   "url": "https://Mustafa Creates.example/",
   "knowsAbout": ["UI/UX Design", "Graphic Design", "Branding", "Web Development", "React", "Next.js", "Three.js", "Motion Design", "Creative Direction"],
   "sameAs": ["https://www.linkedin.com/in/mustafa-amir-8a0aa1355","https://www.upwork.com/freelancers/~01d9b55ceea2b4c2ca?mp_source=shar/","https://github.com/","https://www.behance.net/mustafacreates/"]
@@ -57,26 +59,32 @@
   <span class="cursor-dot"></span>
   <span class="cursor-halo"></span>
   <span class="cursor-hand" aria-hidden="true">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
-        <linearGradient id="cursorHandGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#FFFFFF"/>
-          <stop offset="45%" stop-color="#C8B6FF"/>
-          <stop offset="100%" stop-color="#6C4AB6"/>
+        <linearGradient id="cursorAIGrad" gradientUnits="userSpaceOnUse" x1="6" y1="2" x2="30" y2="33">
+          <stop offset="0%" stop-color="#E9E1FF"/>
+          <stop offset="42%" stop-color="#9A7FE0"/>
+          <stop offset="100%" stop-color="#462F80"/>
         </linearGradient>
       </defs>
-      <rect x="8"    y="3" width="2.2" height="10"   rx="1.1" fill="url(#cursorHandGrad)"/>
-      <rect x="11"   y="2" width="2.2" height="11"   rx="1.1" fill="url(#cursorHandGrad)"/>
-      <rect x="14"   y="3" width="2.2" height="10"   rx="1.1" fill="url(#cursorHandGrad)"/>
-      <path fill="url(#cursorHandGrad)"
-            d="M6 12.5 C6 11.7 6.7 11 7.5 11 L16.5 11
-               C18.4 11 20 12.6 20 14.5 L20 16.5
-               C20 19.8 17.3 22.5 14 22.5 L12 22.5
-               C8.7 22.5 6 19.8 6 16.5 Z"/>
-      <path fill="url(#cursorHandGrad)"
-            d="M6.5 14 C5.6 13.3 5 12.3 5 11
-               C5 9.9 5.9 9 7 9
-               C8 9 8.8 9.7 9 10.7 L9.5 12.5 Z"/>
+      <g stroke="url(#cursorAIGrad)" stroke-linecap="round" fill="none">
+        <path d="M15 3.6 V9.8" stroke-width="3.2"/>
+        <path d="M15 12.4 V19.4" stroke-width="3.2"/>
+        <path d="M19.2 14.6 V19.8" stroke-width="2.9"/>
+        <path d="M22.8 15.8 V20" stroke-width="2.7"/>
+        <path d="M9.4 17.4 L12.7 21" stroke-width="2.7"/>
+        <path stroke-width="2.3" stroke-linejoin="round"
+              d="M12.6 19.4 V25.4 C12.6 28.9 15.5 31.8 19 31.8
+                 L20.5 31.8 C24 31.8 26.9 28.9 26.9 25.4 V19.4"/>
+      </g>
+      <g class="cursor-seam" fill="#E9E1FF" opacity="0.92">
+        <circle cx="15" cy="11.1" r="1.15"/>
+        <circle cx="19.2" cy="13.5" r="0.95"/>
+        <circle cx="22.8" cy="14.8" r="0.9"/>
+      </g>
+      <circle class="cursor-core-ring" cx="19.7" cy="26" r="3.4"
+              fill="none" stroke="#FFFFFF" stroke-width="0.8" opacity="0.5"/>
+      <circle class="cursor-core" cx="19.7" cy="26" r="1.9" fill="#FFFFFF" opacity="0.95"/>
     </svg>
   </span>
 </div>
@@ -86,6 +94,7 @@
 <!-- ============ INTRO CURTAIN ============ -->
 <div class="curtain" id="curtain" aria-hidden="true">
   <div class="curtain-inner">
+    <img class="curtain-logo" src="assets/logo.png" alt="" width="512" height="512" decoding="async" />
     <span class="curtain-mark">Mustafa creates</span>
     <span class="curtain-bar"><i></i></span>
     <span class="curtain-note">Weaving the experience</span>
@@ -96,7 +105,7 @@
 <header class="nav-shell" id="nav">
   <span class="island-glass" aria-hidden="true"></span>
   <span class="island-sheen" aria-hidden="true"></span>
-  <span class="island-mark" aria-hidden="true">M.C</span>
+  <span class="island-mark" aria-hidden="true"><img src="assets/logo.png" alt="" width="512" height="512" decoding="async" /></span>
 
   <div class="island-row">
     <button class="menu-toggle" id="menu-toggle" type="button"
@@ -106,7 +115,7 @@
     </button>
 
     <a class="brand" href="#home" aria-label="Mustafa Creates — home">
-      <span class="brand-mark" aria-hidden="true">M.C</span>
+      <span class="brand-mark" aria-hidden="true"><img src="assets/logo.png" alt="" width="512" height="512" decoding="async" /></span>
       <span class="brand-text">Mustafa <em> Creates </em></span>
     </a>
 
@@ -275,7 +284,6 @@
               <span class="profile-role">Creative Designer<br />&amp; Developer</span>
             </div>
 
-            <span class="profile-corner">01</span>
             <span class="profile-flip-hint">Flip</span>
             <span class="profile-shine" aria-hidden="true"></span>
           </div>
@@ -425,48 +433,31 @@
           </template>
         </li>
 
-        <!-- 04 · Genesis (case study) -->
+        <!-- 04 · Genesis Ascent -->
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
-            <div class="project-media">
-              <img src="assets/project-genesis.jpg" alt="Genesis digital product and brand launch system" width="1200" height="900" loading="lazy" decoding="async" />
+            <a class="project-media" href="https://genese-ascent.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Genesis Ascent in a new tab">
+              <img src="assets/A10.png" alt="Genesis Ascent digital product and brand launch system" width="2559" height="1599" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
-            </div>
+            </a>
             <div class="project-body">
               <p class="project-cat">Digital Product / Branding</p>
               <h3 class="project-title">Genesis</h3>
               <p class="project-desc">A category-defining launch system where sculptural identity meets a precise digital product experience.</p>
               <ul class="tech-list"><li>Creative Direction</li><li>Identity</li><li>Motion</li></ul>
-              <button class="project-open" data-open aria-label="View the Genesis case study">
-                <span>View project</span>
+              <a class="project-open" href="https://genese-ascent.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Visit Genesis Ascent">
+                <span>Visit project</span>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
-              </button>
+              </a>
             </div>
           </article>
-
-          <template data-case>
-            <p class="case-cat">Digital Product / Branding <span>2024</span></p>
-            <h2 class="case-title display display-sm">Genesis</h2>
-            <p class="case-lead">A launch that had to define a category before it could sell inside one.</p>
-            <img class="case-image" src="assets/project-genesis.jpg" alt="Genesis launch system" loading="lazy" decoding="async" />
-            <div class="case-grid">
-              <div><h3>The challenge</h3><p>A first-of-its-kind product with no reference points — and eleven weeks until an investor-facing launch.</p></div>
-              <div><h3>The approach</h3><p>One sculptural motif carried across identity, product UI and launch film, so every surface reinforced the same idea instead of explaining it again.</p></div>
-              <div><h3>The outcome</h3><p>14,000 waitlist signups in the launch week and a Series A closed two months later.</p></div>
-            </div>
-            <dl class="case-facts">
-              <div><dt>Role</dt><dd>Creative direction, identity, motion</dd></div>
-              <div><dt>Timeline</dt><dd>11 weeks</dd></div>
-              <div><dt>Deliverables</dt><dd>Identity, product UI, launch film</dd></div>
-            </dl>
-          </template>
         </li>
 
         <!-- 05 · Meeting Sense Frontend -->
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://ai-meeting-sense-frontend.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Meeting Sense Frontend in a new tab">
-              <img src="https://placehold.co/1200x900/6C4AB6/FFFFFF/png?text=Meeting+Sense&font=roboto" alt="Meeting Sense Frontend preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A1.jpeg" alt="Meeting Sense Frontend preview" width="1600" height="999" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -486,7 +477,7 @@
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://ai-doctor-virtual-medical-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open AI Medical Assistant in a new tab">
-              <img src="https://placehold.co/1200x900/5B3FA6/FFFFFF/png?text=AI+Medical+Assistant&font=roboto" alt="AI Medical Assistant preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A2.jpeg" alt="AI Medical Assistant preview" width="1600" height="999" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -506,7 +497,7 @@
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://well-being-agent.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Well Being Agent in a new tab">
-              <img src="https://placehold.co/1200x900/8464CF/FFFFFF/png?text=Well+Being+Agent&font=roboto" alt="Well Being Agent preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A3.jpeg" alt="Well Being Agent preview" width="1600" height="1008" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -526,7 +517,7 @@
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://cricket-world-cup-rag-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open ICC World Cup RAG System in a new tab">
-              <img src="https://placehold.co/1200x900/462F80/FFFFFF/png?text=Cricket+World+Cup+RAG&font=roboto" alt="ICC World Cup RAG System preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A4.jpeg" alt="ICC World Cup RAG System preview" width="1600" height="1002" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -546,7 +537,7 @@
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://email-automation-sigma-navy.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Email Automation in a new tab">
-              <img src="https://placehold.co/1200x900/B89CFF/1B1436/png?text=Email+Automation&font=roboto" alt="Email Automation preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A5.jpeg" alt="Email Automation preview" width="1600" height="999" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -566,7 +557,7 @@
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://multi-agent-ai-software-house.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open AI Software House Agents in a new tab">
-              <img src="https://placehold.co/1200x900/8A67D6/FFFFFF/png?text=AI+Software+House&font=roboto" alt="AI Software House Agents preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A6.jpeg" alt="AI Software House Agents preview" width="1600" height="999" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -586,7 +577,7 @@
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://bazme-nazam.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Bazme Sukhan in a new tab">
-              <img src="https://placehold.co/1200x900/C8B6FF/1B1436/png?text=Bazme+Sukhan&font=roboto" alt="Bazme Sukhan Urdu History RAG Platform preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A7.jpeg" alt="Bazme Sukhan Urdu History RAG Platform preview" width="1600" height="999" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -606,7 +597,7 @@
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://safe-x-knowledge-assistant.vercel.app/" target="_blank" rel="noopener noreferrer" aria-label="Open Customer RAG System in a new tab">
-              <img src="https://placehold.co/1200x900/4A2D96/FFFFFF/png?text=Customer+RAG+Assistant&font=roboto" alt="Customer RAG System preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A9.jpeg" alt="Customer RAG System preview" width="1600" height="999" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -626,7 +617,7 @@
         <li class="project" data-project>
           <article class="project-card" data-tilt data-tilt-strength="10">
             <a class="project-media" href="https://zenthronix.com/" target="_blank" rel="noopener noreferrer" aria-label="Open Zenthronix in a new tab">
-              <img src="https://placehold.co/1200x900/6C4AB6/FFFFFF/png?text=Zenthronix&font=roboto" alt="Zenthronix electronics marketplace preview" width="1200" height="900" loading="lazy" decoding="async" />
+              <img src="assets/A8.jpeg" alt="Zenthronix electronics marketplace preview" width="1600" height="997" loading="lazy" decoding="async" />
               <span class="project-gloss" aria-hidden="true"></span>
             </a>
             <div class="project-body">
@@ -864,6 +855,7 @@
 </main>
 
 <footer class="footer">
+  <img class="footer-logo" src="assets/logo.png" alt="Mustafa Creates" width="512" height="512" loading="lazy" decoding="async" />
   <p>© <span id="year">2026</span> Mustafa Creates — Creative Designer &amp; Digital Experience Creator.</p>
   <button class="to-top" id="to-top" data-magnetic>
     Back to top <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>

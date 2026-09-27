@@ -299,26 +299,59 @@ kbd {
 }
 .cursor.is-hover .cursor-halo { width: 300px; height: 300px; }
 
+/* AI cursor: a sparkle core with an electron on an orbit, echoing the
+   atom in the logo. Centred on the pointer so it sits inside the halo. */
 .cursor-hand {
   top: -3px;
-  left: -10px;
-  width: 26px;
-  height: 26px;
+  left: -16px;
+  width: 42px;
+  height: 42px;
   transform: translate3d(0, 0, 0);
   z-index: 2;
+  /* A tight dark shadow gives the glyph an edge against the near-white
+     page; the wide violet ones are the glow. */
   filter:
-    drop-shadow(0 0 6px rgba(184, 156, 255, 0.9))
-    drop-shadow(0 0 14px rgba(108, 74, 182, 0.55));
+    drop-shadow(0 1px 1.5px rgba(27, 20, 54, 0.45))
+    drop-shadow(0 0 8px rgba(184, 156, 255, 0.85))
+    drop-shadow(0 0 16px rgba(108, 74, 182, 0.5));
 }
 .cursor-hand svg {
   width: 100%;
   height: 100%;
   display: block;
+  /* An <svg> clips to its viewBox by default, which lopped off the
+     electron as the orbit swung it past the edge. */
+  overflow: visible;
   transform: scale(1);
-  transform-origin: 40% 15%;
+  transform-origin: 50% 50%;
   transition: transform 0.28s var(--ease-elastic);
 }
-.cursor.is-hover .cursor-hand svg { transform: scale(1.14); }
+.cursor.is-hover .cursor-hand svg { transform: scale(1.18); }
+
+/* The AI core in the palm: a steady pulse, with a ring pinging out of
+   it — reads as "thinking" rather than a plain pointer. */
+.cursor-core {
+  transform-box: view-box;
+  transform-origin: 19.7px 26px;
+  animation: cursor-core-pulse 1.9s var(--ease-soft) infinite;
+}
+.cursor-core-ring {
+  transform-box: view-box;
+  transform-origin: 19.7px 26px;
+  animation: cursor-core-ping 2.4s var(--ease-out) infinite;
+}
+.cursor.is-hover .cursor-core { animation-duration: 0.9s; }
+.cursor.is-hover .cursor-core-ring { animation-duration: 1.2s; }
+
+@keyframes cursor-core-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.95; }
+  50%      { transform: scale(0.78); opacity: 0.6; }
+}
+@keyframes cursor-core-ping {
+  0%   { transform: scale(0.6); opacity: 0.6; }
+  70%  { transform: scale(1.25); opacity: 0; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
 
 body.has-custom-cursor:not(.is-loading),
 body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
@@ -355,6 +388,13 @@ body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
 .curtain.is-done { opacity: 0; visibility: hidden; }
 
 .curtain-inner { display: grid; justify-items: center; gap: 1.4rem; }
+.curtain-logo {
+  width: clamp(84px, 13vw, 132px);
+  height: auto;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 10px 26px rgba(108, 74, 182, 0.32));
+}
+
 .curtain-mark {
   font-family: var(--font-display);
   font-size: clamp(2.5rem, 8vw, 4.5rem);
@@ -446,21 +486,31 @@ body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
 }
 .nav-shell.is-collapsed .island-glass { opacity: 0.35; }
 
+/* Sheen sweep — animates `transform` (compositor-only) instead of
+   `background-position` (forces a repaint every frame forever on a
+   fixed, always-visible header — a steady drain on mobile). */
 .island-sheen {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   border-radius: inherit;
   pointer-events: none;
   z-index: 0;
-  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.45) 46%, rgba(255,255,255,0.04) 54%, transparent 70%);
-  background-size: 220% 100%;
-  background-position: 150% 0;
   opacity: 0.7;
   mix-blend-mode: screen;
+}
+.island-sheen::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -60%;
+  width: 220%;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.45) 46%, rgba(255,255,255,0.04) 54%, transparent 70%);
+  will-change: transform;
   animation: island-sheen 8s ease infinite;
 }
 .nav-shell.is-collapsed .island-sheen { opacity: 0.35; }
-@keyframes island-sheen { 0%{background-position:150% 0} 100%{background-position:-80% 0} }
+@keyframes island-sheen { 0%{transform:translateX(-35%)} 100%{transform:translateX(35%)} }
 
 .island-mark {
   position: absolute;
@@ -470,16 +520,8 @@ body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 11px;
-  background: var(--holo);
-  background-size: 220% 100%;
-  color: var(--violet-deep);
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  font-weight: 500;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.75), 0 6px 18px -8px rgba(108,74,182,0.65);
+  width: 42px;
+  height: 42px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.4s var(--ease-glass);
@@ -518,13 +560,24 @@ body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
 .brand-mark {
   display: grid;
   place-items: center;
-  width: 34px; height: 34px;
-  border-radius: 12px;
-  background: var(--holo);
-  background-size: 220% 100%;
-  color: var(--violet-deep);
-  font-size: 0.74rem;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), 0 6px 18px -8px rgba(108,74,182,0.6);
+  width: 42px; height: 42px;
+  flex-shrink: 0;
+}
+
+/* assets/logo.png is a real cut-out (transparent background), so it
+   needs no blend trick — it sits cleanly on the glass. The violet
+   drop-shadow matches the lift the rest of the UI has. */
+.brand-mark img,
+.island-mark img,
+.curtain-logo,
+.footer-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* The orbit rings are very pale lavender and wash out against the
+     white glass, so lift saturation/contrast before the shadow. */
+  filter: saturate(1.45) contrast(1.12)
+          drop-shadow(0 3px 8px rgba(108, 74, 182, 0.3));
 }
 .brand-text { font-size: 0.98rem; white-space: nowrap; }
 .brand-text em { font-family: var(--font-accent); font-style: italic; color: var(--violet); }
@@ -1084,14 +1137,16 @@ body.webgl-ready .hero-fallback { opacity: 0; }
 .profile-flip-hint {
   position: absolute;
   right: 1.8rem; bottom: 1.9rem;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.64rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--violet);
-  opacity: 0.6;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(10,6,26,0.4);
+  opacity: 0.75;
   transition: opacity 0.3s ease;
 }
 .profile-flip-hint::after {
@@ -1100,8 +1155,11 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   border: 1px solid currentColor;
   border-radius: 4px;
   transform: rotate(18deg);
+  transition: transform 0.5s var(--ease-glass);
 }
 .profile-card:hover .profile-flip-hint { opacity: 1; }
+.profile-card:hover .profile-flip-hint::after { transform: rotate(198deg); }
+.profile-card.is-flipped .profile-flip-hint::after { transform: rotate(378deg); }
 
 .profile-face {
   position: absolute;
@@ -1116,14 +1174,13 @@ body.webgl-ready .hero-fallback { opacity: 0; }
 
 .profile-front {
   padding: 0;
-  grid-template-rows: 1fr auto;
-  align-content: stretch;
-  background: linear-gradient(150deg, rgba(255,255,255,0.86) 0%, rgba(244,240,255,0.6) 50%, rgba(200,182,255,0.44) 100%);
+  display: block;
+  background: #fff;
 }
 
 .profile-photo {
-  position: relative;
-  min-height: 0;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   background: linear-gradient(135deg, var(--lav-200) 0%, var(--lav-300) 100%);
   isolation: isolate;
@@ -1137,8 +1194,20 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   transition: transform 1s var(--ease-out);
 }
 .profile-card:hover .profile-photo img { transform: scale(1.05); }
+/* Scrim so the caption stays legible sitting on top of the photo. */
+.profile-photo::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  background: linear-gradient(180deg, rgba(10,6,26,0) 0%, rgba(10,6,26,0.62) 100%);
+  pointer-events: none;
+}
 
 .profile-meta {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 1;
   display: grid;
   gap: 0.35rem;
   padding: 1.15rem 1.35rem 1.4rem;
@@ -1150,14 +1219,12 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   font-family: var(--font-accent);
   font-style: italic;
   font-weight: 400;
-  font-size: var(--step--1);
-  line-height: 1.4;
+  font-size: var(--step-0);
+  line-height: 1.35;
   letter-spacing: -0.01em;
   text-transform: none;
-  background: linear-gradient(100deg, var(--violet) 0%, var(--lav-400) 55%, var(--violet-deep) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(10,6,26,0.4);
 }
 
 .profile-corner {
@@ -1281,17 +1348,28 @@ body.webgl-ready .hero-fallback { opacity: 0; }
 .gallery-track {
   display: flex;
   align-items: center;
-  gap: clamp(1.25rem, 3.5vw, 3.5rem);
-  padding-inline: max(var(--gutter), calc(50vw - min(31rem, 42vw)));
+  gap: clamp(1.4rem, 3vw, 3rem);
+  /* Half the card width — keeps the active card centred in the ring.
+     Must stay in sync with .project width below. */
+  padding-inline: max(var(--gutter), calc(50vw - min(21rem, 38vw)));
   width: max-content;
+  /* No perspective here, deliberately. This track is max-content wide
+     — tens of thousands of px across all the cards — so a
+     perspective-origin of 50% landed at the centre of the *whole
+     track*, thousands of px off-screen. Every card then sheared
+     toward a vanishing point the viewer could never see, which is
+     what piled the cards on top of each other. Each card carries its
+     own perspective() in its transform instead (see .project-card),
+     which is self-contained and cannot drift off-screen. */
 }
 
 .project {
   flex: 0 0 auto;
-  width: min(62rem, 84vw);
+  width: min(42rem, 76vw);
   scroll-snap-align: center;
-  content-visibility: auto;
-  contain-intrinsic-size: 900px 500px;
+  /* No content-visibility here on purpose: the cards flanking the
+     active one are part of the ring and must always be painted. With
+     it on, a card rotating back into view could pop in blank. */
 }
 
 .project-card {
@@ -1300,20 +1378,51 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   align-items: stretch;
-  gap: clamp(1.25rem, 2.5vw, 2.5rem);
-  padding: clamp(1rem, 1.6vw, 1.4rem);
+  gap: clamp(0.9rem, 1.8vw, 1.6rem);
+  padding: clamp(0.85rem, 1.2vw, 1.1rem);
   border-radius: var(--radius-xl);
-  border: 1px solid var(--glass-line);
-  background: linear-gradient(150deg, rgba(255,255,255,0.8) 0%, rgba(246,242,255,0.55) 60%, rgba(200,182,255,0.32) 100%);
-  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.9);
+  /* Glassmorphism: the frosted pane (and its edge) live on ::before
+     below, not here. backdrop-filter directly on this element risks
+     Chromium flattening its transform. The border has to live down
+     there too — a z-index:-1 pseudo paints over its host's border. */
+  border: 0;
+  background: transparent;
+  box-shadow: var(--shadow-md);
+  /* Ring curve: cards to either side swing back around a circle. Kept
+     moderate and level (no downward dip) so a card coming back around
+     reads as a clean card rather than a skewed sliver. */
   transform:
-    rotateY(calc(var(--p) * -15deg + var(--ry, 0deg)))
-    translateZ(calc(var(--p) * var(--p) * -140px))
-    scale(calc(1 - (var(--p) * var(--p)) * 0.07));
-  opacity: calc(1 - (var(--p) * var(--p)) * 0.4);
+    perspective(1100px)
+    rotateY(calc(var(--p) * -28deg + var(--ry, 0deg)))
+    translateZ(calc(var(--p) * var(--p) * -120px))
+    scale(calc(1 - (var(--p) * var(--p)) * 0.08));
+  opacity: calc(1 - (var(--p) * var(--p)) * 0.42);
   transition: box-shadow 0.4s var(--ease-out), opacity 0.4s var(--ease-out);
-  transform-style: preserve-3d;
-  will-change: transform, opacity;
+  /* Flat on purpose: with preserve-3d the media/body/::before each got
+     their own place in 3D space and could intersect the card next
+     door, which is half of why the content bled together. */
+  transform-style: flat;
+}
+
+/* The frosted pane: translucent tint over a blurred backdrop, so a
+   card rotating around behind this one genuinely reads through it. */
+.project-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: linear-gradient(150deg, rgba(255,255,255,0.88) 0%, rgba(246,242,255,0.82) 60%, rgba(214,201,255,0.76) 100%);
+  pointer-events: none;
+}
+/* Live blur only on the cards actually on screen (class is toggled in
+   script.js). With 3 looped copies of every card there are ~39 panes
+   in the DOM, and blurring them all was the single heaviest thing on
+   the page. */
+.project-card.is-near::before {
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
 }
 
 .project-media {
@@ -1325,7 +1434,9 @@ body.webgl-ready .hero-fallback { opacity: 0; }
 .project-media img {
   width: 100%;
   height: 100%;
-  min-height: clamp(200px, 34vw, 420px);
+  /* Sized against the smaller card - 34vw made the media taller than
+     the card is wide on big screens. */
+  min-height: clamp(165px, 18vw, 280px);
   object-fit: cover;
   transform: scale(1.02);
   transition: transform 0.7s var(--ease-out);
@@ -1363,8 +1474,8 @@ a.project-media:focus-visible img {
 .project-body {
   display: grid;
   align-content: center;
-  gap: 0.9rem;
-  padding: clamp(1rem, 2vw, 2rem) clamp(0.75rem, 1.5vw, 1.4rem);
+  gap: 0.7rem;
+  padding: clamp(0.85rem, 1.4vw, 1.3rem) clamp(0.6rem, 1vw, 1rem);
 }
 .project-cat {
   font-size: 0.7rem;
@@ -1380,7 +1491,7 @@ a.project-media:focus-visible img {
   letter-spacing: -0.04em;
   text-transform: uppercase;
 }
-.project-desc { color: var(--ink-soft); font-size: var(--step-0); max-width: 34ch; }
+.project-desc { color: var(--ink-soft); font-size: var(--step--1); max-width: 32ch; }
 .tech-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.2rem; }
 .tech-list li {
   padding: 0.32rem 0.8rem;
@@ -1956,6 +2067,15 @@ a.project-media:focus-visible img {
   width: 100%; height: 100%;
   z-index: -1;
 }
+/* Phones skip the WebGL contact scene (script.js) — this static
+   gradient stands in for it so the section isn't left flat. */
+@media (max-width: 860px), (pointer: coarse) {
+  .contact {
+    background:
+      radial-gradient(60% 55% at 78% 20%, rgba(200,182,255,0.5) 0%, rgba(200,182,255,0) 70%),
+      radial-gradient(55% 50% at 15% 85%, rgba(184,156,255,0.4) 0%, rgba(184,156,255,0) 72%);
+  }
+}
 .contact-inner {
   position: relative;
   max-width: 1440px;
@@ -2077,6 +2197,13 @@ a.project-media:focus-visible img {
 /* ---------------------------------------------------------------
    16. FOOTER
    --------------------------------------------------------------- */
+.footer-logo {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  opacity: 0.92;
+}
+
 .footer {
   display: flex;
   flex-wrap: wrap;
@@ -2177,29 +2304,41 @@ a.project-media:focus-visible img {
     z-index: 10000;
   }
 
+  /* Collapsed = a clean round tap target, not a squashed oval. */
   .nav-shell.is-collapsed {
-    height: 48px;
-    width: 96px;
+    height: 52px;
+    width: 52px;
     padding: 0;
   }
 
-  /* Island visuals — glass, sheen, mark all stay */
+  /* Island visuals — glass + sheen stay; the collapsed pill shows the
+     logo (the whole pill is the tap target to expand it again). */
   .island-glass,
-  .island-sheen,
-  .island-mark { display: block; }
+  .island-sheen { display: block; }
+  .island-mark {
+    width: 36px;
+    height: 36px;
+  }
 
-  /* Row: hamburger + brand, left aligned inside the pill */
-  .island-row,
-  .nav-shell.is-collapsed .island-row {
-    display: flex;
+  /* Row: hamburger on the left, brand name true-centered in the pill
+     (a same-width spacer balances the hamburger's column). */
+  .island-row {
+    display: grid;
+    grid-template-columns: 38px 1fr 38px;
     align-items: center;
-    justify-content: flex-start;
-    gap: 0.55rem;
     width: 100%;
     opacity: 1;
     pointer-events: auto;
     transition: opacity 0.35s ease 0.18s;
   }
+  /* Collapsed: hide the row, only the M.C island mark shows — same
+     behaviour as desktop, tap the pill to bring the row back. */
+  .nav-shell.is-collapsed .island-row {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+  .nav-shell.is-collapsed { cursor: pointer; }
 
   /* Hamburger — circular, compact, sits inside the island */
   .menu-toggle {
@@ -2235,14 +2374,35 @@ a.project-media:focus-visible img {
   .nav { display: none; }
   .availability { display: none; }
 
-  /* Brand sizing for the island */
-  .brand { flex-shrink: 0; gap: 0.5rem; }
-  .brand-mark {
-    width: 30px; height: 30px;
-    border-radius: 10px;
-    font-size: 0.68rem;
+  /* Brand: no square mark on mobile — just the name, centered in the
+     pill between the hamburger and the edge, styled to read as tappable. */
+  .brand {
+    grid-column: 2;
+    justify-self: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    transition: background 0.25s var(--ease-glass), transform 0.2s var(--ease-glass);
   }
-  .brand-text { font-size: 0.9rem; }
+  .brand:active { transform: scale(0.96); background: rgba(255,255,255,0.35); }
+  .brand-mark { display: grid; width: 32px; height: 32px; }
+  .brand-text {
+    font-size: 0.94rem;
+    position: relative;
+  }
+  .brand-text::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -3px;
+    height: 1px;
+    background: currentColor;
+    color: var(--violet);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.3s var(--ease-glass);
+  }
+  .brand:active .brand-text::after { transform: scaleX(1); }
 
   /* Mobile menu overlay appears behind the island */
   .mobile-menu { display: block; z-index: 9999; }
@@ -2272,11 +2432,15 @@ a.project-media:focus-visible img {
   .eyebrow { font-size: 0.68rem; padding: 0.4rem 0.9rem; }
   .hero-role { font-size: var(--step--1); gap: 0.55rem; }
 
-  .project { width: 86vw; }
-  .gallery-track { padding-inline: 7vw; }
+  .project { width: 76vw; }
+  .gallery-track { padding-inline: 12vw; }
   .project-card {
-    transform: rotateY(calc(var(--p) * -8deg)) scale(calc(1 - (var(--p) * var(--p)) * 0.04));
-    opacity: calc(1 - (var(--p) * var(--p)) * 0.3);
+    transform:
+      perspective(800px)
+      rotateY(calc(var(--p) * -20deg))
+      translateZ(calc(var(--p) * var(--p) * -70px))
+      scale(calc(1 - (var(--p) * var(--p)) * 0.07));
+    opacity: calc(1 - (var(--p) * var(--p)) * 0.45);
   }
 
   .constellation { height: auto; min-height: 0; perspective: none; }
@@ -2338,9 +2502,13 @@ a.project-media:focus-visible img {
   .float-word-2 { bottom: 8%; }
 
   .gallery { padding: 2rem 0 3rem; }
-  .gallery-track { gap: 1rem; padding-inline: 5vw; }
-  .project { width: 88vw; }
+  .gallery-track { gap: 0.8rem; padding-inline: 10vw; }
+  .project { width: 80vw; }
   .project-card { padding: 0.85rem; border-radius: var(--radius-lg); }
+  .project-card.is-near::before {
+    backdrop-filter: blur(11px) saturate(140%);
+    -webkit-backdrop-filter: blur(11px) saturate(140%);
+  }
   .project-title { font-size: var(--step-1); }
   .project-media { border-radius: var(--radius); }
   .project-body { padding: 0.85rem 0.5rem 0.5rem; }
@@ -2401,7 +2569,8 @@ a.project-media:focus-visible img {
   .profile-meta { padding: 0.95rem 1rem 1.15rem; padding-right: 3.4rem; }
   .profile-corner { top: 0.75rem; right: 0.75rem; padding: 0.22rem 0.6rem; font-size: 0.6rem; }
 
-  .project { width: 92vw; }
+  .project { width: 86vw; }
+  .gallery-track { padding-inline: 7vw; }
   .project-cat { font-size: 0.64rem; letter-spacing: 0.18em; }
   .tech-list li { font-size: 0.64rem; padding: 0.28rem 0.65rem; }
 
@@ -2459,6 +2628,7 @@ a.project-media:focus-visible img {
   .scroll-cue-rail i { display: none; }
   [data-reveal], .word { opacity: 1 !important; transform: none !important; }
   .profile-card, .skill, .float-word, .about-ring { animation: none !important; }
+  .cursor-core, .cursor-core-ring { animation: none !important; }
   .project-card { transform: none !important; opacity: 1 !important; }
   .quote-card { transition: none; }
   .nav-shell { transition: none; }
