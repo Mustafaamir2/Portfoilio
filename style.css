@@ -57,8 +57,8 @@
   --nav-h: 76px;
 }
 
-@media (max-width: 860px) { :root { --nav-h: 66px; } }
-@media (max-width: 480px) { :root { --nav-h: 60px; } }
+@media (max-width: 860px) { :root { --nav-h: 64px; } }
+@media (max-width: 480px) { :root { --nav-h: 64px; } }
 
 @property --flip {
   syntax: "<angle>";
@@ -169,7 +169,6 @@ ul, ol { list-style: none; padding: 0; }
   padding: var(--section-y) var(--gutter);
   max-width: 1440px;
   margin-inline: auto;
-  /* Skip paint for offscreen sections — huge win */
   content-visibility: auto;
   contain-intrinsic-size: auto 800px;
 }
@@ -231,7 +230,6 @@ kbd {
 .blob {
   position: absolute;
   border-radius: 50%;
-  /* Was blur(80px) on huge sizes — the single biggest GPU cost */
   filter: blur(48px);
   opacity: 0.42;
   transform: translate3d(0, 0, 0);
@@ -256,8 +254,6 @@ kbd {
 }
 .blob-4 { display: none; }
 
-/* Static grain — animated grain forced the whole viewport to repaint
-   every step. Static noise gives the same texture for free. */
 .grain {
   position: absolute;
   inset: 0;
@@ -293,7 +289,6 @@ kbd {
 
 .cursor-dot { display: none; }
 
-/* Cheaper halo — smaller + less blur */
 .cursor-halo {
   border-radius: 50%;
   transform: translate3d(-50%, -50%, 0);
@@ -415,7 +410,6 @@ body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
   isolation: isolate;
 
   background: rgba(255, 255, 255, 0.42);
-  /* Was blur(34px) saturate(200%) — expensive on large fixed element */
   backdrop-filter: blur(16px) saturate(150%);
   -webkit-backdrop-filter: blur(16px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.28);
@@ -1279,7 +1273,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   -ms-overflow-style: none;
   cursor: grab;
   -webkit-overflow-scrolling: touch;
-  /* Force its own layer so scroll doesn't ripple into neighbours */
   contain: layout paint;
 }
 .gallery::-webkit-scrollbar { display: none; }
@@ -1297,7 +1290,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   flex: 0 0 auto;
   width: min(62rem, 84vw);
   scroll-snap-align: center;
-  /* Reduce perspective cost on offscreen cards */
   content-visibility: auto;
   contain-intrinsic-size: 900px 500px;
 }
@@ -1314,7 +1306,6 @@ body.webgl-ready .hero-fallback { opacity: 0; }
   border: 1px solid var(--glass-line);
   background: linear-gradient(150deg, rgba(255,255,255,0.8) 0%, rgba(246,242,255,0.55) 60%, rgba(200,182,255,0.32) 100%);
   box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.9);
-  /* Simplified transform (no expensive nested calc on --p^2 more than needed) */
   transform:
     rotateY(calc(var(--p) * -15deg + var(--ry, 0deg)))
     translateZ(calc(var(--p) * var(--p) * -140px))
@@ -1622,8 +1613,6 @@ a.project-media:focus-visible img {
   min-height: 44px;
   border-radius: 999px;
   border: 1px solid var(--glass-line);
-  /* Removed backdrop-filter — these float continuously, so it forced a
-     full-screen blur every frame. Solid-ish background reads the same. */
   background: rgba(252, 250, 255, 0.94);
   box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.85);
   text-align: center;
@@ -2169,70 +2158,107 @@ a.project-media:focus-visible img {
   .work-nav { position: static; margin-top: 1.4rem; }
 }
 
+/* ===============================================================
+   MOBILE — island header stays, same design language as desktop
+   =============================================================== */
 @media (max-width: 860px) {
-  .nav-shell,
-  .nav-shell.is-collapsed {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    width: 100%;
-    height: auto;
-    padding: 0.55rem var(--gutter);
-    border-radius: 0;
-    transform: none;
-    background: rgba(252, 251, 255, 0.94);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border: none;
-    border-bottom: 1px solid rgba(108, 74, 182, 0.08);
-    box-shadow: 0 4px 20px -10px rgba(70, 47, 128, 0.14);
-    overflow: visible;
-    display: block;
-    transition: none;
+
+  /* --- Island shell: same pill, just narrower + shorter --- */
+  .nav-shell {
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 2 * var(--gutter));
+    height: 54px;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    display: flex;
+    overflow: hidden;
     z-index: 10000;
   }
 
+  .nav-shell.is-collapsed {
+    height: 48px;
+    width: 96px;
+    padding: 0;
+  }
+
+  /* Island visuals — glass, sheen, mark all stay */
   .island-glass,
   .island-sheen,
-  .island-mark { display: none !important; }
+  .island-mark { display: block; }
 
+  /* Row: hamburger + brand, left aligned inside the pill */
   .island-row,
   .nav-shell.is-collapsed .island-row {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    justify-content: flex-start;
+    gap: 0.55rem;
     width: 100%;
     opacity: 1;
     pointer-events: auto;
-    transition: none;
+    transition: opacity 0.35s ease 0.18s;
   }
 
+  /* Hamburger — circular, compact, sits inside the island */
   .menu-toggle {
     display: block;
-    order: -1;
-    position: relative;
-    z-index: 10001;
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.92);
-    border-color: rgba(108, 74, 182, 0.16);
-    box-shadow: 0 4px 14px -8px rgba(70, 47, 128, 0.3);
-  }
-
-  .nav { display: none; }
-
-  .mobile-menu { display: block; }
-
-  body.menu-open .nav-shell {
-    border-bottom-color: transparent;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(108, 74, 182, 0.08);
     box-shadow: none;
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    flex-shrink: 0;
+  }
+  .menu-toggle:hover,
+  .menu-toggle:active {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(108, 74, 182, 0.18);
+    box-shadow: 0 4px 14px -8px rgba(70, 47, 128, 0.25);
+  }
+  .menu-toggle-line {
+    width: 15px;
+    height: 1.8px;
+  }
+  .menu-toggle-line:nth-child(1) { transform: translate(-50%, calc(-50% - 3.5px)); }
+  .menu-toggle-line:nth-child(2) { transform: translate(-50%, calc(-50% + 3.5px)); }
+  .menu-toggle[aria-expanded="true"] .menu-toggle-line:nth-child(1) {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  .menu-toggle[aria-expanded="true"] .menu-toggle-line:nth-child(2) {
+    transform: translate(-50%, -50%) rotate(-45deg);
   }
 
-  .brand { flex-shrink: 0; }
+  /* Hide desktop nav links + availability inside the island */
+  .nav { display: none; }
+  .availability { display: none; }
 
+  /* Brand sizing for the island */
+  .brand { flex-shrink: 0; gap: 0.5rem; }
+  .brand-mark {
+    width: 30px; height: 30px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+  }
+  .brand-text { font-size: 0.9rem; }
+
+  /* Mobile menu overlay appears behind the island */
+  .mobile-menu { display: block; z-index: 9999; }
+
+  /* When the menu is open, let the menu gradient show through the glass.
+     The island keeps its glass + sheen + toggle so it still reads as an island. */
+  body.menu-open .nav-shell {
+    background: rgba(255, 255, 255, 0.32);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 20px 60px -26px rgba(70, 47, 128, 0.3),
+      0 6px 20px -8px rgba(70, 47, 128, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  /* ---------- Page-level responsive tweaks ---------- */
   .hero { padding: calc(var(--nav-h) + 5vh) var(--gutter) 7rem; }
   .hero-copy { gap: 1.2rem; max-width: 100%; }
   .hero-meta { display: none; }
@@ -2354,8 +2380,10 @@ a.project-media:focus-visible img {
 @media (max-width: 480px) {
   :root { --gutter: 1rem; }
 
-  .brand-text { display: none; }
-  .brand-mark { width: 32px; height: 32px; border-radius: 10px; font-size: 0.7rem; }
+  /* Keep brand text visible inside the island — slightly smaller */
+  .brand-text { font-size: 0.85rem; }
+  .brand-mark { width: 28px; height: 28px; border-radius: 9px; font-size: 0.64rem; }
+  .menu-toggle { width: 36px; height: 36px; }
 
   .btn { padding: 0.85rem 1.3rem; font-size: 0.72rem; letter-spacing: 0.05em; }
   .btn svg { width: 14px; height: 14px; }
