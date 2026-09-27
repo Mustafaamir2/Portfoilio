@@ -1,6 +1,5 @@
 /* =====================================================================
-   NOVA WEAVER — interaction layer
-   Responsive-aware. Auto-detects desktop / tablet / mobile and adjusts.
+   NOVA WEAVER — interaction layer (PERFORMANCE OPTIMIZED)
    ===================================================================== */
 (function () {
   "use strict";
@@ -8,9 +7,6 @@
   var doc = document;
   var body = doc.body;
 
-  /* ------------------------------------------------------------------
-     Breakpoint queries (kept in sync with CSS)
-     ------------------------------------------------------------------ */
   var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   var coarseQuery = window.matchMedia("(pointer: coarse)");
   var tabletQuery = window.matchMedia("(max-width: 1024px)");
@@ -27,6 +23,24 @@
     pointerPx: { x: 0, y: 0 },
     scrollY: window.scrollY || 0
   };
+
+  /* -----------------------------------------------------------------
+     Device capability tier
+       0 = low (mobile / coarse pointer / weak device)
+       1 = medium
+       2 = high
+       3 = ultra
+     ----------------------------------------------------------------- */
+  var TIER = (function () {
+    if (state.reduced) return 1;
+    if (state.coarse || state.mobile) return 0;
+    var cores = navigator.hardwareConcurrency || 6;
+    var mem   = navigator.deviceMemory || 6;
+    var dpr   = window.devicePixelRatio || 1;
+    if (cores <= 4 || mem <= 4) return 1;
+    if (cores <= 6 || dpr >= 2.5) return 2;
+    return 3;
+  })();
 
   function onQueryChange(query, handler) {
     if (typeof query.addEventListener === "function") query.addEventListener("change", handler);
@@ -69,6 +83,11 @@
      ------------------------------------------------------------------ */
   var tickers = [];
   var looping = false;
+  var lastTime = 0;
+  var frameCount = 0;
+  var frameTimeAccum = 0;
+  var measuredFps = 60;
+  var fpsCooldown = 0;
 
   function addTicker(fn) {
     tickers.push(fn);
@@ -85,13 +104,23 @@
     requestAnimationFrame(frame);
   }
 
-  var lastTime = 0;
   function frame(now) {
     var delta = lastTime ? Math.min((now - lastTime) / 1000, 0.05) : 0.016;
     lastTime = now;
+
+    /* Simple FPS sampling every ~0.5s */
+    frameTimeAccum += delta;
+    frameCount++;
+    if (frameTimeAccum >= 0.5) {
+      measuredFps = frameCount / frameTimeAccum;
+      frameTimeAccum = 0;
+      frameCount = 0;
+      if (fpsCooldown > 0) fpsCooldown--;
+    }
+
     for (var i = 0; i < tickers.length; i++) tickers[i](delta, now / 1000);
     if (tickers.length) requestAnimationFrame(frame);
-    else looping = false;
+    else { looping = false; lastTime = 0; }
   }
 
   doc.addEventListener("visibilitychange", function () {
@@ -110,7 +139,7 @@
   }), { passive: true });
 
   /* ------------------------------------------------------------------
-     Mobile menu — open / close state
+     Mobile menu
      ------------------------------------------------------------------ */
   var mobileMenuEl = $("#mobile-menu");
   var menuToggleEl = $("#menu-toggle");
@@ -120,8 +149,7 @@
   function openMenu() {
     if (!state.mobile) return;
     lastFocusedBeforeMenu = doc.activeElement;
-    body.classList.add("menu-open");
-    body.classList.add("no-scroll");
+    body.classList.add("menu-open", "no-scroll");
     if (mobileMenuEl) mobileMenuEl.setAttribute("aria-hidden", "false");
     if (menuToggleEl) {
       menuToggleEl.setAttribute("aria-expanded", "true");
@@ -134,8 +162,7 @@
 
   function closeMenu() {
     if (!body.classList.contains("menu-open")) return;
-    body.classList.remove("menu-open");
-    body.classList.remove("no-scroll");
+    body.classList.remove("menu-open", "no-scroll");
     if (mobileMenuEl) mobileMenuEl.setAttribute("aria-hidden", "true");
     if (menuToggleEl) {
       menuToggleEl.setAttribute("aria-expanded", "false");
@@ -148,8 +175,7 @@
   }
 
   function toggleMenu() {
-    if (body.classList.contains("menu-open")) closeMenu();
-    else openMenu();
+    body.classList.contains("menu-open") ? closeMenu() : openMenu();
   }
 
   if (menuToggleEl) {
@@ -211,9 +237,9 @@
 
     function step() {
       if (done) return;
-      progress = Math.min(progress + (0.06 + Math.random() * 0.1), 0.92);
+      progress = Math.min(progress + 0.18, 0.92);
       if (bar) bar.style.width = (progress * 100).toFixed(1) + "%";
-      setTimeout(step, 130);
+      setTimeout(step, 110);
     }
     step();
 
@@ -226,12 +252,12 @@
         body.classList.remove("is-loading");
         body.classList.add("is-ready");
         window.setTimeout(revealInView, 60);
-      }, prefersStillness() ? 0 : 320);
+      }, prefersStillness() ? 0 : 260);
     }
 
-    if (doc.readyState === "complete") window.setTimeout(finish, 260);
-    else window.addEventListener("load", function () { window.setTimeout(finish, 260); });
-    window.setTimeout(finish, 4200);
+    if (doc.readyState === "complete") window.setTimeout(finish, 200);
+    else window.addEventListener("load", function () { window.setTimeout(finish, 200); });
+    window.setTimeout(finish, 3600);
   })();
 
   /* ------------------------------------------------------------------
@@ -239,16 +265,13 @@
      ------------------------------------------------------------------ */
   (function cursor() {
     var el = $(".cursor");
-    if (!el || state.coarse || state.mobile || prefersStillness()) {
+    if (!el || state.coarse || state.mobile || TIER === 0 || prefersStillness()) {
       if (el) el.remove();
       return;
     }
 
-    /* Flag the body so CSS can hide the native arrow while this custom
-       cursor (futuristic AI hand + glow halo) is the one on screen. */
     body.classList.add("has-custom-cursor");
 
-    var dot  = $(".cursor-dot", el);
     var halo = $(".cursor-halo", el);
     var hand = $(".cursor-hand", el);
 
@@ -275,41 +298,34 @@
       if (e.target.closest && e.target.closest(hoverSel)) el.classList.remove("is-hover");
     });
 
+    var haloEl = halo, handEl = hand;
     addTicker(function () {
-      slow.x = lerp(slow.x, pos.x, 0.12);
-      slow.y = lerp(slow.y, pos.y, 0.12);
+      slow.x = lerp(slow.x, pos.x, 0.14);
+      slow.y = lerp(slow.y, pos.y, 0.14);
 
-      /* The glow halo trails the pointer smoothly (unchanged behaviour). */
-      if (halo) halo.style.transform =
+      if (haloEl) haloEl.style.transform =
         "translate3d(" + slow.x + "px," + slow.y + "px,0) translate(-50%,-50%)";
-
-      /* The AI hand tracks the pointer exactly — its CSS offset aligns
-         the index fingertip with the real pointer position. */
-      if (hand) hand.style.transform =
+      if (handEl) handEl.style.transform =
         "translate3d(" + pos.x + "px," + pos.y + "px,0)";
-
-      /* The legacy dot is hidden via CSS but we keep its transform in
-         case it is re-enabled later. */
-      if (dot) dot.style.transform =
-        "translate3d(" + pos.x + "px," + pos.y + "px,0) translate(-50%,-50%)";
     });
   })();
 
   /* ------------------------------------------------------------------
-     Magnetic buttons (desktop only)
+     Magnetic buttons
      ------------------------------------------------------------------ */
   (function magnetic() {
-    if (state.coarse || state.mobile || prefersStillness()) return;
+    if (state.coarse || state.mobile || TIER === 0 || prefersStillness()) return;
 
     $$("[data-magnetic]").forEach(function (el) {
       var target = { x: 0, y: 0 }, current = { x: 0, y: 0 }, stop = null;
       var strength = parseFloat(el.getAttribute("data-magnetic")) || 0.32;
+      var box = null;
 
       function run() {
         if (stop) return;
         stop = addTicker(function () {
-          current.x = lerp(current.x, target.x, 0.18);
-          current.y = lerp(current.y, target.y, 0.18);
+          current.x = lerp(current.x, target.x, 0.2);
+          current.y = lerp(current.y, target.y, 0.2);
           el.style.transform = "translate3d(" + current.x.toFixed(2) + "px," + current.y.toFixed(2) + "px,0)";
           if (!target.x && !target.y && Math.abs(current.x) < 0.05 && Math.abs(current.y) < 0.05) {
             el.style.transform = "";
@@ -318,22 +334,28 @@
         });
       }
 
-      el.addEventListener("pointerenter", run);
+      el.addEventListener("pointerenter", function () {
+        box = el.getBoundingClientRect();
+        run();
+      });
       el.addEventListener("pointermove", function (e) {
-        var box = el.getBoundingClientRect();
+        if (!box) box = el.getBoundingClientRect();
         target.x = (e.clientX - (box.left + box.width / 2)) * strength;
         target.y = (e.clientY - (box.top + box.height / 2)) * strength;
         run();
       });
-      el.addEventListener("pointerleave", function () { target.x = 0; target.y = 0; });
+      el.addEventListener("pointerleave", function () {
+        box = null;
+        target.x = 0; target.y = 0;
+      });
     });
   })();
 
   /* ------------------------------------------------------------------
-     Tilt (desktop only)
+     Tilt — desktop only, cheaper math
      ------------------------------------------------------------------ */
   (function tilt() {
-    if (state.coarse || state.tablet || prefersStillness()) return;
+    if (state.coarse || state.tablet || TIER === 0 || prefersStillness()) return;
 
     $$("[data-tilt]").forEach(function (el) {
       var max = parseFloat(el.getAttribute("data-tilt-strength")) || 10;
@@ -342,8 +364,8 @@
       function run() {
         if (stop) return;
         stop = addTicker(function () {
-          current.x = lerp(current.x, target.x, 0.12);
-          current.y = lerp(current.y, target.y, 0.12);
+          current.x = lerp(current.x, target.x, 0.14);
+          current.y = lerp(current.y, target.y, 0.14);
           el.style.setProperty("--rx", current.x.toFixed(2) + "deg");
           el.style.setProperty("--ry", current.y.toFixed(2) + "deg");
           if (!target.x && !target.y && Math.abs(current.x) < 0.02 && Math.abs(current.y) < 0.02) {
@@ -381,7 +403,7 @@
     function wrap(node) {
       var span = doc.createElement("span");
       span.className = "word";
-      span.style.setProperty("--wd", (index * 0.055).toFixed(3) + "s");
+      span.style.setProperty("--wd", (index * 0.05).toFixed(3) + "s");
       index++;
       span.appendChild(node);
       return span;
@@ -436,7 +458,7 @@
         show(entry.target);
         revealObserver.unobserve(entry.target);
       });
-    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.12 });
+    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.1 });
     revealTargets.forEach(function (el) { revealObserver.observe(el); });
   } else {
     revealTargets.forEach(show);
@@ -486,7 +508,8 @@
     if (!shell || !list) return;
 
     var SCROLL_TRIGGER = 60;
-    var RE_OPEN_AT     = 30;
+    var RE_OPEN_AT = 30;
+    var lastCollapsed = false;
 
     function moveIndicator(link) {
       if (!indicator || state.mobile || !link) return;
@@ -529,12 +552,17 @@
     }
 
     function isDesktop() { return !state.mobile; }
-
     function expandIsland() {
+      if (!lastCollapsed) return;
+      lastCollapsed = false;
       shell.classList.remove("is-collapsed");
-      window.setTimeout(function () { moveIndicator(activeLink()); }, 220);
+      window.setTimeout(function () { moveIndicator(activeLink()); }, 180);
     }
-    function collapseIsland() { shell.classList.add("is-collapsed"); }
+    function collapseIsland() {
+      if (lastCollapsed) return;
+      lastCollapsed = true;
+      shell.classList.add("is-collapsed");
+    }
 
     window.addEventListener("scroll", throttleFrame(function () {
       if (!isDesktop()) return;
@@ -563,12 +591,10 @@
 
     window.addEventListener("resize", throttleFrame(function () {
       if (state.mobile) {
+        lastCollapsed = false;
         shell.classList.remove("is-collapsed");
-      } else if (window.scrollY > SCROLL_TRIGGER) {
-        collapseIsland();
-      } else {
-        expandIsland();
-      }
+      } else if (window.scrollY > SCROLL_TRIGGER) collapseIsland();
+      else expandIsland();
     }));
 
     window.setTimeout(function () { moveIndicator(activeLink()); }, 700);
@@ -603,24 +629,25 @@
      ------------------------------------------------------------------ */
   (function scrollFx() {
     var bar = $(".scroll-progress span");
-    var parallaxItems = $$("[data-parallax]");
+    var parallaxItems = TIER === 0 ? [] : $$("[data-parallax]");
 
-    function update() {
+    var update = throttleFrame(function () {
       var max = doc.documentElement.scrollHeight - window.innerHeight;
       var progress = max > 0 ? clamp(window.scrollY / max, 0, 1) : 0;
       if (bar) bar.style.transform = "scaleX(" + progress.toFixed(4) + ")";
 
       if (!prefersStillness() && !state.mobile) {
-        parallaxItems.forEach(function (el) {
+        for (var i = 0; i < parallaxItems.length; i++) {
+          var el = parallaxItems[i];
           var amount = parseFloat(el.getAttribute("data-parallax")) || 0.05;
           var box = el.getBoundingClientRect();
           var centre = box.top + box.height / 2 - window.innerHeight / 2;
           el.style.transform = "translate3d(0," + (-centre * amount).toFixed(2) + "px,0)";
-        });
+        }
       }
-    }
-    window.addEventListener("scroll", throttleFrame(update), { passive: true });
-    window.addEventListener("resize", throttleFrame(update));
+    });
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
     update();
   })();
 
@@ -634,7 +661,7 @@
     function run(el) {
       var target = parseInt(el.getAttribute("data-count"), 10) || 0;
       if (prefersStillness()) { el.textContent = String(target); return; }
-      var started = null, duration = 1400;
+      var started = null, duration = 1200;
       var stop = addTicker(function (delta, now) {
         if (started === null) started = now;
         var t = clamp((now - started) * 1000 / duration, 0, 1);
@@ -656,7 +683,7 @@
   })();
 
   /* ------------------------------------------------------------------
-     Work gallery
+     Work gallery — cached geometry + visibility gating
      ------------------------------------------------------------------ */
   (function gallery() {
     var rail = $("#gallery");
@@ -667,7 +694,9 @@
     if (!rail || !track) return;
 
     var cards = $$(".project", track);
+    var cardEls = cards.map(function (c) { return c.firstElementChild; });
     var current = 0;
+    var galleryVisible = false;
 
     function perspective() {
       var railBox = rail.getBoundingClientRect();
@@ -675,18 +704,19 @@
       var half = railBox.width / 2;
       var closest = 0, closestDistance = Infinity;
 
-      cards.forEach(function (item, i) {
-        var box = item.getBoundingClientRect();
+      for (var i = 0; i < cards.length; i++) {
+        var box = cards[i].getBoundingClientRect();
         var itemCentre = box.left + box.width / 2;
         var distance = itemCentre - centre;
         var p = clamp(distance / half, -1, 1);
-        var card = item.firstElementChild;
-        if (card) card.style.setProperty("--p", p.toFixed(4));
-        if (Math.abs(distance) < closestDistance) {
-          closestDistance = Math.abs(distance);
+        var card = cardEls[i];
+        if (card) card.style.setProperty("--p", p.toFixed(3));
+        var absDist = distance < 0 ? -distance : distance;
+        if (absDist < closestDistance) {
+          closestDistance = absDist;
           closest = i;
         }
-      });
+      }
 
       current = closest;
       var scrollable = rail.scrollWidth - rail.clientWidth;
@@ -700,8 +730,23 @@
       if (next) next.disabled = rail.scrollLeft >= scrollable - 2;
     }
 
-    rail.addEventListener("scroll", throttleFrame(perspective), { passive: true });
-    window.addEventListener("resize", throttleFrame(perspective));
+    var onScroll = throttleFrame(function () {
+      if (galleryVisible) perspective();
+    });
+    rail.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", throttleFrame(function () {
+      if (galleryVisible) perspective();
+    }));
+
+    if ("IntersectionObserver" in window) {
+      var gObs = new IntersectionObserver(function (entries) {
+        galleryVisible = entries[0].isIntersecting;
+        if (galleryVisible) perspective();
+      }, { rootMargin: "200px" });
+      gObs.observe(rail);
+    } else {
+      galleryVisible = true;
+    }
 
     function goTo(index) {
       var item = cards[clamp(index, 0, cards.length - 1)];
@@ -757,31 +802,16 @@
       if (moved > 8) { e.preventDefault(); e.stopPropagation(); }
     }, true);
 
-    /* ------------------------------------------------------------------
-       Wheel behaviour — FIXED
-       Vertical wheel now lets the page scroll normally (up / down) so the
-       gallery never traps the viewport. Horizontal intent (trackpad swipe
-       or Shift + wheel) still travels the gallery left / right.
-       ------------------------------------------------------------------ */
     rail.addEventListener("wheel", function (e) {
       if (state.coarse || e.ctrlKey) return;
-
-      var horizontalIntent =
-        Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey;
-
-      /* Vertical wheel → hand the event back to the page. */
+      var horizontalIntent = Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey;
       if (!horizontalIntent) return;
-
       var scrollable = rail.scrollWidth - rail.clientWidth;
       if (scrollable <= 0) return;
-
       var atStart = rail.scrollLeft <= 1;
       var atEnd = rail.scrollLeft >= scrollable - 1;
       var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-
-      /* Let the page scroll when the gallery has no room left to move. */
       if ((delta < 0 && atStart) || (delta > 0 && atEnd)) return;
-
       e.preventDefault();
       rail.scrollLeft += delta;
     }, { passive: false });
@@ -837,7 +867,7 @@
       window.setTimeout(function () {
         overlay.hidden = true;
         if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
-      }, prefersStillness() ? 0 : 420);
+      }, prefersStillness() ? 0 : 380);
     }
 
     $$("[data-open]").forEach(function (button) {
@@ -949,20 +979,19 @@
     if (!list || !fill) return;
     var items = $$(".tl-item", list);
 
-    function update() {
+    var update = throttleFrame(function () {
       var box = list.getBoundingClientRect();
       var start = window.innerHeight * 0.85;
       var progress = clamp((start - box.top) / (box.height + start - window.innerHeight * 0.4), 0, 1);
       fill.style.transform = "scaleY(" + progress.toFixed(4) + ")";
 
-      items.forEach(function (item) {
-        var b = item.getBoundingClientRect();
-        item.classList.toggle("is-visible", b.top < window.innerHeight * 0.78);
-      });
-    }
-
-    window.addEventListener("scroll", throttleFrame(update), { passive: true });
-    window.addEventListener("resize", throttleFrame(update));
+      for (var i = 0; i < items.length; i++) {
+        var b = items[i].getBoundingClientRect();
+        items[i].classList.toggle("is-visible", b.top < window.innerHeight * 0.78);
+      }
+    });
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
     update();
   })();
 
@@ -1023,7 +1052,7 @@
     function restart() {
       if (timer) window.clearInterval(timer);
       if (prefersStillness()) return;
-      timer = window.setInterval(function () { go(index + 1); }, 6500);
+      timer = window.setInterval(function () { go(index + 1); }, 7000);
     }
 
     if (prev) prev.addEventListener("click", function () { go(index - 1, true); });
@@ -1153,25 +1182,28 @@
   })();
 
   /* ------------------------------------------------------------------
-     WebGL scenes (Three.js)
+     WebGL scenes (Three.js) — heavily optimized
      ------------------------------------------------------------------ */
   (function webgl() {
     if (typeof window.THREE === "undefined") return;
     var THREE = window.THREE;
 
-    function makeEnvironment(renderer) {
+    /* -------- Shared background canvas texture (used as env map) ------- */
+    var sharedEnvTexture = null;
+    function makeEnvironment() {
+      if (sharedEnvTexture) return sharedEnvTexture;
       var canvas = doc.createElement("canvas");
-      canvas.width = 512;
-      canvas.height = 256;
+      canvas.width = 256;
+      canvas.height = 128;
       var ctx = canvas.getContext("2d");
 
-      var sky = ctx.createLinearGradient(0, 0, 0, 256);
+      var sky = ctx.createLinearGradient(0, 0, 0, 128);
       sky.addColorStop(0, "#ffffff");
       sky.addColorStop(0.45, "#efe8ff");
       sky.addColorStop(0.75, "#cdb9ff");
       sky.addColorStop(1, "#6c4ab6");
       ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, 512, 256);
+      ctx.fillRect(0, 0, 256, 128);
 
       function blot(x, y, r, colour) {
         var glow = ctx.createRadialGradient(x, y, 0, x, y, r);
@@ -1180,23 +1212,21 @@
         ctx.fillStyle = glow;
         ctx.fillRect(x - r, y - r, r * 2, r * 2);
       }
-      blot(120, 70, 110, "rgba(255,255,255,0.95)");
-      blot(390, 110, 90, "rgba(214,238,255,0.8)");
-      blot(300, 230, 120, "rgba(184,156,255,0.6)");
+      blot(60, 35, 60, "rgba(255,255,255,0.95)");
+      blot(200, 60, 45, "rgba(214,238,255,0.8)");
+      blot(150, 115, 60, "rgba(184,156,255,0.6)");
 
-      var texture = new THREE.CanvasTexture(canvas);
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      texture.encoding = THREE.sRGBEncoding;
-
-      var pmrem = new THREE.PMREMGenerator(renderer);
-      pmrem.compileEquirectangularShader();
-      var env = pmrem.fromEquirectangular(texture).texture;
-      pmrem.dispose();
-      texture.dispose();
-      return env;
+      var tex = new THREE.CanvasTexture(canvas);
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      tex.encoding = THREE.sRGBEncoding;
+      sharedEnvTexture = tex;
+      return tex;
     }
 
+    /* Shared radial sprite for point clouds */
+    var sharedSprite = null;
     function makeSprite() {
+      if (sharedSprite) return sharedSprite;
       var canvas = doc.createElement("canvas");
       canvas.width = canvas.height = 64;
       var ctx = canvas.getContext("2d");
@@ -1206,9 +1236,10 @@
       grad.addColorStop(1, "rgba(255,255,255,0)");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 64, 64);
-      var texture = new THREE.CanvasTexture(canvas);
-      texture.encoding = THREE.sRGBEncoding;
-      return texture;
+      var tex = new THREE.CanvasTexture(canvas);
+      tex.encoding = THREE.sRGBEncoding;
+      sharedSprite = tex;
+      return tex;
     }
 
     function makeRenderer(canvas) {
@@ -1217,17 +1248,24 @@
         renderer = new THREE.WebGLRenderer({
           canvas: canvas,
           alpha: true,
-          antialias: !state.coarse && !state.mobile,
-          powerPreference: "high-performance"
+          antialias: TIER >= 2 && !state.mobile,
+          powerPreference: TIER >= 2 ? "high-performance" : "default",
+          stencil: false,
+          depth: true
         });
       } catch (err) { return null; }
       if (!renderer.getContext()) return null;
-      var cap = state.mobile ? 1 : state.coarse ? 1.5 : 2;
+
+      /* Aggressive DPR caps — a huge win on HiDPI screens */
+      var cap = TIER === 0 ? 1 : TIER === 1 ? 1.25 : TIER === 2 ? 1.5 : 2;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cap));
       renderer.setClearAlpha(0);
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.05;
+
+      /* Prevent freezing on context loss */
+      canvas.addEventListener("webglcontextlost", function (e) { e.preventDefault(); }, false);
       return renderer;
     }
 
@@ -1243,13 +1281,11 @@
       if (!("IntersectionObserver" in window)) { onChange(true); return; }
       var obs = new IntersectionObserver(function (entries) {
         onChange(entries[0].isIntersecting);
-      }, { rootMargin: "120px" });
+      }, { rootMargin: "100px" });
       obs.observe(canvas);
     }
 
-    var sprite = null;
-
-    /* HERO SCENE */
+    /* ============== HERO SCENE ============== */
     (function heroScene() {
       var canvas = $("#hero-canvas");
       if (!canvas) return;
@@ -1259,94 +1295,89 @@
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
       camera.position.set(0, 0, 6.4);
-      scene.environment = makeEnvironment(renderer);
+      scene.environment = makeEnvironment();
 
       var world = new THREE.Group();
       scene.add(world);
 
-      var backdropCanvas = doc.createElement("canvas");
-      backdropCanvas.width = backdropCanvas.height = 256;
-      var bctx = backdropCanvas.getContext("2d");
-      var bgrad = bctx.createRadialGradient(128, 110, 10, 128, 128, 140);
-      bgrad.addColorStop(0, "#ffffff");
-      bgrad.addColorStop(0.45, "#efe9ff");
-      bgrad.addColorStop(1, "#d6c8ff");
-      bctx.fillStyle = bgrad;
-      bctx.fillRect(0, 0, 256, 256);
-      var backdropTexture = new THREE.CanvasTexture(backdropCanvas);
-      backdropTexture.encoding = THREE.sRGBEncoding;
-      var backdrop = new THREE.Mesh(
-        new THREE.PlaneGeometry(26, 26),
-        new THREE.MeshBasicMaterial({ map: backdropTexture, transparent: true, opacity: 0.55, depthWrite: false })
-      );
-      backdrop.position.z = -7;
-      scene.add(backdrop);
+      /* Segments scale with device tier */
+      var sphereSeg = TIER === 0 ? 32 : TIER === 1 ? 40 : TIER === 2 ? 56 : 72;
+      var torusSeg  = TIER === 0 ? 48 : TIER === 1 ? 64 : TIER === 2 ? 100 : 140;
+      var particles = TIER === 0 ? 80 : TIER === 1 ? 180 : TIER === 2 ? 400 : 600;
+      var shardCount = TIER === 0 ? 4 : TIER === 1 ? 6 : TIER === 2 ? 10 : 12;
 
-      var sphereSeg = state.mobile ? 40 : state.coarse ? 48 : 96;
+      /* Orb — transmission only on high-end (it doubles rendering cost) */
       var orbMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff, metalness: 0, roughness: 0.04,
-        transmission: 1, thickness: 1.7, ior: 1.46,
-        clearcoat: 1, clearcoatRoughness: 0.06,
-        attenuationColor: new THREE.Color(0xc8b6ff),
-        attenuationDistance: 2.4, envMapIntensity: 1.15, transparent: true
+        color: 0xffffff,
+        metalness: 0.05,
+        roughness: 0.08,
+        clearcoat: 1,
+        clearcoatRoughness: 0.08,
+        envMapIntensity: 1.1,
+        transparent: true,
+        opacity: TIER >= 2 ? 0.92 : 0.82
       });
-      if ("iridescence" in orbMaterial) {
-        orbMaterial.iridescence = 0.55;
+      if (TIER >= 2) {
+        orbMaterial.transmission = 1;
+        orbMaterial.thickness = 1.6;
+        orbMaterial.ior = 1.46;
+        orbMaterial.attenuationColor = new THREE.Color(0xc8b6ff);
+        orbMaterial.attenuationDistance = 2.4;
+      }
+      if ("iridescence" in orbMaterial && TIER >= 2) {
+        orbMaterial.iridescence = 0.5;
         orbMaterial.iridescenceIOR = 1.32;
       }
 
       var orb = new THREE.Mesh(new THREE.SphereGeometry(1.45, sphereSeg, sphereSeg), orbMaterial);
       world.add(orb);
 
-      var core = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(0.62, 0),
-        new THREE.MeshPhysicalMaterial({
-          color: 0x8a67d6, metalness: 0.92, roughness: 0.18,
-          envMapIntensity: 1.4, flatShading: true
-        })
-      );
+      var coreMat = new THREE.MeshPhysicalMaterial({
+        color: 0x8a67d6, metalness: 0.9, roughness: 0.2,
+        envMapIntensity: 1.3, flatShading: true
+      });
+      var core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.62, 0), coreMat);
       world.add(core);
 
-      var innerShell = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(0.95, 1),
-        new THREE.MeshBasicMaterial({ color: 0xb89cff, wireframe: true, transparent: true, opacity: 0.35 })
-      );
+      var shellMat = new THREE.MeshBasicMaterial({
+        color: 0xb89cff, wireframe: true, transparent: true, opacity: 0.32
+      });
+      var innerShell = new THREE.Mesh(new THREE.IcosahedronGeometry(0.95, 1), shellMat);
       world.add(innerShell);
 
+      /* Rings — one shared material, per-ring clones removed */
       var rings = new THREE.Group();
       var ringMaterial = new THREE.MeshStandardMaterial({
-        color: 0xc8b6ff, emissive: 0x8a6ad0, emissiveIntensity: 0.55,
-        metalness: 0.9, roughness: 0.22, transparent: true, opacity: 0.9
+        color: 0xc8b6ff, emissive: 0x8a6ad0, emissiveIntensity: 0.5,
+        metalness: 0.9, roughness: 0.24, transparent: true, opacity: 0.9
       });
-      var torusSeg = state.mobile ? 60 : state.coarse ? 96 : 180;
       [
         { r: 2.15, t: 0.012, rx: Math.PI / 2.2, ry: 0.2 },
         { r: 2.55, t: 0.008, rx: Math.PI / 1.7, ry: -0.5 },
         { r: 2.95, t: 0.006, rx: Math.PI / 2.9, ry: 0.9 }
       ].forEach(function (spec) {
         var ring = new THREE.Mesh(
-          new THREE.TorusGeometry(spec.r, spec.t, 8, torusSeg),
-          ringMaterial.clone()
+          new THREE.TorusGeometry(spec.r, spec.t, 6, torusSeg),
+          ringMaterial
         );
         ring.rotation.set(spec.rx, spec.ry, 0);
         rings.add(ring);
       });
       world.add(rings);
 
+      /* Shards — one shared material, shared geometries */
       var shards = new THREE.Group();
       var shardGeoms = [
         new THREE.OctahedronGeometry(0.16, 0),
         new THREE.TetrahedronGeometry(0.18, 0),
-        new THREE.IcosahedronGeometry(0.14, 0),
-        new THREE.TorusGeometry(0.14, 0.04, 8, 28)
+        new THREE.IcosahedronGeometry(0.14, 0)
       ];
       var shardMat = new THREE.MeshPhysicalMaterial({
-        color: 0xe9e1ff, metalness: 0.35, roughness: 0.12,
-        clearcoat: 1, envMapIntensity: 1.5, transparent: true, opacity: 0.92
+        color: 0xe9e1ff, metalness: 0.35, roughness: 0.14,
+        clearcoat: 1, envMapIntensity: 1.4, transparent: true, opacity: 0.92
       });
-      var shardCount = state.mobile ? 6 : state.coarse ? 9 : 16;
       for (var s = 0; s < shardCount; s++) {
-        var mesh = new THREE.Mesh(shardGeoms[s % shardGeoms.length], shardMat.clone());
+        var mesh = new THREE.Mesh(shardGeoms[s % shardGeoms.length], shardMat);
         var angle = (s / shardCount) * Math.PI * 2 + Math.random() * 0.4;
         var radius = 2.3 + Math.random() * 1.9;
         mesh.position.set(
@@ -1363,54 +1394,33 @@
       }
       world.add(shards);
 
-      var particleCount = state.mobile ? 150 : state.coarse ? 320 : 850;
-      var positions = new Float32Array(particleCount * 3);
-      var speeds = new Float32Array(particleCount);
-      for (var p = 0; p < particleCount; p++) {
+      var positions = new Float32Array(particles * 3);
+      var speeds = new Float32Array(particles);
+      for (var p = 0; p < particles; p++) {
         positions[p * 3] = (Math.random() - 0.5) * 16;
         positions[p * 3 + 1] = (Math.random() - 0.5) * 11;
         positions[p * 3 + 2] = (Math.random() - 0.5) * 9 - 1;
         speeds[p] = 0.05 + Math.random() * 0.14;
       }
-      var particleGeometry = new THREE.BufferGeometry();
-      particleGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-      sprite = sprite || makeSprite();
-      var particles = new THREE.Points(particleGeometry, new THREE.PointsMaterial({
-        size: 0.055, map: sprite, color: 0x9a7fe0,
+      var particleGeo = new THREE.BufferGeometry();
+      particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      var particleMat = new THREE.PointsMaterial({
+        size: 0.06, map: makeSprite(), color: 0x9a7fe0,
         transparent: true, opacity: 0.55, depthWrite: false, sizeAttenuation: true
-      }));
-      scene.add(particles);
+      });
+      var particlePoints = new THREE.Points(particleGeo, particleMat);
+      scene.add(particlePoints);
 
-      scene.add(new THREE.HemisphereLight(0xffffff, 0xd9ccff, 0.85));
-      var key = new THREE.DirectionalLight(0xffffff, 1.5);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0xd9ccff, 0.9));
+      var key = new THREE.DirectionalLight(0xffffff, 1.4);
       key.position.set(4, 6, 5);
       scene.add(key);
-      var rim = new THREE.DirectionalLight(0xc8b6ff, 0.9);
+      var rim = new THREE.DirectionalLight(0xc8b6ff, 0.8);
       rim.position.set(-5, -2, -4);
       scene.add(rim);
-      var cursorLight = new THREE.PointLight(0xb89cff, 2.4, 14, 2);
+      var cursorLight = new THREE.PointLight(0xb89cff, 2.2, 14, 2);
       cursorLight.position.set(0, 0, 3.4);
       scene.add(cursorLight);
-
-      var shadowTex = (function () {
-        var c = doc.createElement("canvas");
-        c.width = c.height = 128;
-        var x = c.getContext("2d");
-        var g = x.createRadialGradient(64, 64, 4, 64, 64, 62);
-        g.addColorStop(0, "rgba(70,47,128,0.55)");
-        g.addColorStop(0.55, "rgba(70,47,128,0.18)");
-        g.addColorStop(1, "rgba(70,47,128,0)");
-        x.fillStyle = g;
-        x.fillRect(0, 0, 128, 128);
-        return new THREE.CanvasTexture(c);
-      })();
-      var shadow = new THREE.Mesh(
-        new THREE.PlaneGeometry(6, 6),
-        new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.4, depthWrite: false })
-      );
-      shadow.rotation.x = -Math.PI / 2;
-      shadow.position.y = -2.25;
-      scene.add(shadow);
 
       var drag = { active: false, x: 0, y: 0, vx: 0, vy: 0, id: null };
       var aim = { x: 0, y: 0 };
@@ -1451,14 +1461,16 @@
       }
 
       var elapsed = 0;
+      var particleArr = particleGeo.attributes.position.array;
+
       addTicker(function (delta) {
         if (!visible || doc.hidden) return;
         elapsed += delta;
 
         aim.x = (state.pointer.y - 0.5) * 0.5;
         aim.y = (state.pointer.x - 0.5) * 0.9;
-        eased.x = lerp(eased.x, aim.x, 0.035);
-        eased.y = lerp(eased.y, aim.y, 0.035);
+        eased.x = lerp(eased.x, aim.x, 0.04);
+        eased.y = lerp(eased.y, aim.y, 0.04);
 
         drag.vx *= 0.94;
         drag.vy *= 0.94;
@@ -1473,23 +1485,23 @@
         innerShell.rotation.y = -elapsed * 0.18;
         innerShell.rotation.z = elapsed * 0.1;
 
-        rings.children.forEach(function (ring, i) {
-          ring.rotation.z = elapsed * (0.12 + i * 0.05) * (i % 2 ? -1 : 1);
-        });
+        for (var ri = 0; ri < rings.children.length; ri++) {
+          rings.children[ri].rotation.z = elapsed * (0.12 + ri * 0.05) * (ri % 2 ? -1 : 1);
+        }
 
-        shards.children.forEach(function (shard) {
+        for (var si = 0; si < shards.children.length; si++) {
+          var shard = shards.children[si];
           shard.rotation.x += delta * shard.userData.spin;
           shard.rotation.y += delta * shard.userData.spin * 0.7;
           shard.position.y = shard.userData.baseY + Math.sin(elapsed * shard.userData.bob + shard.userData.phase) * 0.22;
-        });
-
-        var array = particleGeometry.attributes.position.array;
-        for (var i = 0; i < particleCount; i++) {
-          array[i * 3 + 1] += speeds[i] * delta;
-          if (array[i * 3 + 1] > 5.5) array[i * 3 + 1] = -5.5;
         }
-        particleGeometry.attributes.position.needsUpdate = true;
-        particles.rotation.y = elapsed * 0.02;
+
+        for (var pi = 0; pi < particles; pi++) {
+          particleArr[pi * 3 + 1] += speeds[pi] * delta;
+          if (particleArr[pi * 3 + 1] > 5.5) particleArr[pi * 3 + 1] = -5.5;
+        }
+        particleGeo.attributes.position.needsUpdate = true;
+        particlePoints.rotation.y = elapsed * 0.02;
 
         cursorLight.position.x = lerp(cursorLight.position.x, (state.pointer.x - 0.5) * 9, 0.06);
         cursorLight.position.y = lerp(cursorLight.position.y, -(state.pointer.y - 0.5) * 6, 0.06);
@@ -1504,71 +1516,73 @@
       });
     })();
 
-    /* CONTACT ORB */
+    /* ============== CONTACT SCENE ============== */
     (function contactScene() {
       var canvas = $("#contact-canvas");
       if (!canvas) return;
+      /* Skip entirely on the lowest tier — a static blurred background
+         from CSS is used instead (saves an entire WebGL context). */
+      if (TIER === 0) return;
+
       var renderer = makeRenderer(canvas);
       if (!renderer) return;
 
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera(46, 1, 0.1, 60);
       camera.position.set(0, 0, 8);
-      scene.environment = makeEnvironment(renderer);
+      scene.environment = makeEnvironment();
 
-      var orbMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xd3c2ff, metalness: 0.15, roughness: 0.16,
+      var orbMat = new THREE.MeshPhysicalMaterial({
+        color: 0xd3c2ff, metalness: 0.15, roughness: 0.18,
         clearcoat: 1, clearcoatRoughness: 0.12,
-        envMapIntensity: 1.25, transparent: true, opacity: 0.72
+        envMapIntensity: 1.2, transparent: true, opacity: 0.78
       });
-      if (!state.coarse && !state.mobile) {
-        orbMaterial.transmission = 0.65;
-        orbMaterial.thickness = 3.2;
-        orbMaterial.ior = 1.32;
-        orbMaterial.attenuationColor = new THREE.Color(0xb89cff);
-        orbMaterial.attenuationDistance = 4;
+      if (TIER >= 2) {
+        orbMat.transmission = 0.6;
+        orbMat.thickness = 3;
+        orbMat.ior = 1.32;
+        orbMat.attenuationColor = new THREE.Color(0xb89cff);
+        orbMat.attenuationDistance = 4;
       }
 
-      var orbSeg = state.mobile ? 32 : state.coarse ? 40 : 84;
-      var orb = new THREE.Mesh(new THREE.SphereGeometry(2.7, orbSeg, orbSeg), orbMaterial);
+      var orbSeg = TIER >= 2 ? 56 : 40;
+      var orb = new THREE.Mesh(new THREE.SphereGeometry(2.7, orbSeg, orbSeg), orbMat);
       scene.add(orb);
 
-      var halo = new THREE.Mesh(
-        new THREE.SphereGeometry(3.5, 40, 40),
-        new THREE.MeshBasicMaterial({
-          color: 0xc8b6ff, transparent: true, opacity: 0.18,
-          side: THREE.BackSide, depthWrite: false
-        })
-      );
+      var haloMat = new THREE.MeshBasicMaterial({
+        color: 0xc8b6ff, transparent: true, opacity: 0.18,
+        side: THREE.BackSide, depthWrite: false
+      });
+      var halo = new THREE.Mesh(new THREE.SphereGeometry(3.5, 32, 32), haloMat);
       scene.add(halo);
 
-      var lattice = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(3.1, 1),
-        new THREE.MeshBasicMaterial({ color: 0xb89cff, wireframe: true, transparent: true, opacity: 0.16 })
-      );
+      var latticeMat = new THREE.MeshBasicMaterial({
+        color: 0xb89cff, wireframe: true, transparent: true, opacity: 0.16
+      });
+      var lattice = new THREE.Mesh(new THREE.IcosahedronGeometry(3.1, 1), latticeMat);
       scene.add(lattice);
 
-      var dustCount = state.mobile ? 80 : state.coarse ? 160 : 420;
+      var dustCount = TIER >= 2 ? 260 : 140;
       var dust = new Float32Array(dustCount * 3);
       for (var i = 0; i < dustCount; i++) {
         dust[i * 3] = (Math.random() - 0.5) * 18;
         dust[i * 3 + 1] = (Math.random() - 0.5) * 12;
         dust[i * 3 + 2] = (Math.random() - 0.5) * 10;
       }
-      var dustGeometry = new THREE.BufferGeometry();
-      dustGeometry.setAttribute("position", new THREE.BufferAttribute(dust, 3));
-      sprite = sprite || makeSprite();
-      var dustPoints = new THREE.Points(dustGeometry, new THREE.PointsMaterial({
-        size: 0.07, map: sprite, color: 0x9a7fe0,
+      var dustGeo = new THREE.BufferGeometry();
+      dustGeo.setAttribute("position", new THREE.BufferAttribute(dust, 3));
+      var dustMat = new THREE.PointsMaterial({
+        size: 0.07, map: makeSprite(), color: 0x9a7fe0,
         transparent: true, opacity: 0.45, depthWrite: false
-      }));
+      });
+      var dustPoints = new THREE.Points(dustGeo, dustMat);
       scene.add(dustPoints);
 
       scene.add(new THREE.HemisphereLight(0xffffff, 0xcfc0ff, 1));
       var key = new THREE.DirectionalLight(0xffffff, 1.2);
       key.position.set(3, 5, 6);
       scene.add(key);
-      var follow = new THREE.PointLight(0xffffff, 2.2, 22, 2);
+      var follow = new THREE.PointLight(0xffffff, 2, 22, 2);
       follow.position.set(0, 0, 5);
       scene.add(follow);
 
@@ -1581,10 +1595,7 @@
         if (v && prefersStillness()) renderer.render(scene, camera);
       });
 
-      if (prefersStillness()) {
-        renderer.render(scene, camera);
-        return;
-      }
+      if (prefersStillness()) { renderer.render(scene, camera); return; }
 
       var elapsed = 0;
       var target = new THREE.Vector3();
