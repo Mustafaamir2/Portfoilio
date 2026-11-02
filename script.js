@@ -1872,16 +1872,49 @@
   var year = $("#year");
   if (year) year.textContent = String(new Date().getFullYear());
 })();
-/* Videos: load a Drive preview only when a card is tapped, so 40 cards
-   do not load 40 players at once. This does not touch the 3D scenes. */
+
+/* Videos slideshow: auto-advances every 4 seconds, pauses on hover,
+   focus, and while a video is playing. Does not touch the 3D scenes. */
 (function () {
-  var cards = document.querySelectorAll(".video-card");
+  var track = document.getElementById("videos-track");
+  var currentEl = document.getElementById("videos-current");
+  if (!track) return;
+  var cards = track.querySelectorAll(".video-card");
+  if (!cards.length) return;
+  var index = 0;
+  var playing = false;
+  var paused = false;
+  var timer = null;
+  function show(i) {
+    index = (i + cards.length) % cards.length;
+    track.style.transform = "translateX(-" + index * 100 + "%)";
+    if (currentEl) currentEl.textContent = String(index + 1);
+  }
+  function stop() { if (timer) { window.clearInterval(timer); timer = null; } }
+  function start() {
+    stop();
+    timer = window.setInterval(function () {
+      if (!playing && !paused) show(index + 1);
+    }, 4000);
+  }
+  var prev = document.querySelector("[data-slide-prev]");
+  var next = document.querySelector("[data-slide-next]");
+  if (prev) prev.addEventListener("click", function () { show(index - 1); });
+  if (next) next.addEventListener("click", function () { show(index + 1); });
+  var stage = track.parentElement;
+  if (stage) {
+    stage.addEventListener("mouseenter", function () { paused = true; });
+    stage.addEventListener("mouseleave", function () { paused = false; });
+    stage.addEventListener("focusin", function () { paused = true; });
+    stage.addEventListener("focusout", function () { paused = false; });
+  }
   cards.forEach(function (card) {
     var btn = card.querySelector(".video-play");
     if (!btn) return;
     btn.addEventListener("click", function () {
       var src = card.getAttribute("data-preview");
       if (!src) return;
+      playing = true;
       var frame = document.createElement("iframe");
       frame.src = src;
       frame.setAttribute("allow", "autoplay; fullscreen");
@@ -1891,4 +1924,6 @@
       card.appendChild(frame);
     });
   });
+  show(0);
+  start();
 })();
