@@ -1872,3 +1872,23 @@
   var year = $("#year");
   if (year) year.textContent = String(new Date().getFullYear());
 })();
+/* Videos: load a Drive preview only when a card is tapped, so 40 cards
+   do not load 40 players at once. This does not touch the 3D scenes. */
+(function () {
+  var cards = document.querySelectorAll(".video-card");
+  cards.forEach(function (card) {
+    var btn = card.querySelector(".video-play");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var src = card.getAttribute("data-preview");
+      if (!src) return;
+      var frame = document.createElement("iframe");
+      frame.src = src;
+      frame.setAttribute("allow", "autoplay; fullscreen");
+      frame.setAttribute("allowfullscreen", "");
+      frame.setAttribute("title", "Video preview");
+      card.innerHTML = "";
+      card.appendChild(frame);
+    });
+  });
+})();
