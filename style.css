@@ -2646,8 +2646,8 @@ a.project-media:focus-visible img {
 .videos {
   max-width: none;
   padding-inline: 0;
-  background: #0a0812;
-  color: #f5f3ff;
+  background: var(--bg);
+  color: var(--ink);
 }
 .videos-inner {
   max-width: 1440px;
@@ -2657,15 +2657,16 @@ a.project-media:focus-visible img {
 .videos-pill {
   display: inline-block;
   padding: 0.45rem 1rem;
-  border: 1px solid rgba(255,255,255,0.25);
+  border: 1px solid var(--edge);
+  background: rgba(255,255,255,0.55);
   border-radius: 999px;
   font-size: 0.9rem;
-  color: #d9d2ff;
+  color: var(--ink-soft);
 }
-.videos .display { color: #fff; }
+.videos .display { color: var(--ink); }
 .videos-lead {
   max-width: 56ch;
-  color: rgba(245,243,255,0.75);
+  color: var(--ink-soft);
   line-height: 1.5;
 }
 .videos-strip {
@@ -2685,8 +2686,9 @@ a.project-media:focus-visible img {
   aspect-ratio: 9 / 16;
   overflow: hidden;
   border-radius: 18px;
-  background: #1a1430;
-  border: 1px solid rgba(255,255,255,0.12);
+  background: #fff;
+  border: 1px solid var(--edge-soft);
+  box-shadow: var(--shadow-md);
 }
 .video-thumb {
   position: absolute;
@@ -2711,8 +2713,9 @@ a.project-media:focus-visible img {
   height: 64px;
   border-radius: 50%;
   border: 0;
-  background: rgba(255,255,255,0.92);
-  color: #120a2e;
+  background: #fff;
+  color: var(--violet-deep);
+  box-shadow: var(--shadow-md);
   font-size: 1.4rem;
   cursor: pointer;
 }
@@ -2726,9 +2729,9 @@ a.project-media:focus-visible img {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.3);
-  background: transparent;
-  color: #fff;
+  border: 1px solid var(--edge);
+  background: rgba(255,255,255,0.7);
+  color: var(--violet-deep);
   font-size: 1.6rem;
   line-height: 1;
   cursor: pointer;
