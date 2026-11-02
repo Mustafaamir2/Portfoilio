@@ -376,57 +376,6 @@ body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
   will-change: transform;
 }
 
-.curtain {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(180deg, #FCFBFF 0%, #F0EAFF 100%);
-  transition: opacity 0.7s var(--ease-out), visibility 0.7s;
-}
-.curtain.is-done { opacity: 0; visibility: hidden; }
-
-.curtain-inner { display: grid; justify-items: center; gap: 1.4rem; }
-.curtain-logo {
-  width: clamp(84px, 13vw, 132px);
-  height: auto;
-  aspect-ratio: 1;
-  filter: drop-shadow(0 10px 26px rgba(108, 74, 182, 0.32));
-}
-
-.curtain-mark {
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-  font-weight: 500;
-  letter-spacing: -0.06em;
-  background: var(--holo-text);
-  background-size: 250% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.curtain-bar {
-  display: block;
-  width: min(220px, 50vw);
-  height: 2px;
-  background: rgba(108,74,182,0.12);
-  overflow: hidden;
-  border-radius: 999px;
-}
-.curtain-bar i {
-  display: block;
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--lav-300), var(--violet));
-  transition: width 0.4s var(--ease-out);
-}
-.curtain-note {
-  font-size: var(--step--1);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}
 
 @keyframes holo-pan { from{background-position:0% 50%} to{background-position:250% 50%} }
 
@@ -569,7 +518,6 @@ body.has-custom-cursor:not(.is-loading) * { cursor: none !important; }
    drop-shadow matches the lift the rest of the UI has. */
 .brand-mark img,
 .island-mark img,
-.curtain-logo,
 .footer-logo {
   width: 100%;
   height: 100%;
@@ -2638,7 +2586,7 @@ a.project-media:focus-visible img {
 }
 
 @media print {
-  .environment, .cursor, .scroll-progress, .curtain, .nav-shell,
+  .environment, .cursor, .scroll-progress, .nav-shell,
   .mobile-menu, .hero-canvas, .contact-canvas, .scroll-cue, .work-nav, .to-top {
     display: none !important;
   }

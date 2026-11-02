@@ -231,38 +231,10 @@
     if (!state.mobile && body.classList.contains("menu-open")) closeMenu();
   }));
 
-  /* ------------------------------------------------------------------
-     Intro curtain
-     ------------------------------------------------------------------ */
-  (function curtain() {
-    var el = $("#curtain");
-    if (!el) return;
-    var bar = $(".curtain-bar i", el);
-    var progress = 0, done = false;
-
-    function step() {
-      if (done) return;
-      progress = Math.min(progress + 0.18, 0.92);
-      if (bar) bar.style.width = (progress * 100).toFixed(1) + "%";
-      setTimeout(step, 110);
-    }
-    step();
-
-    function finish() {
-      if (done) return;
-      done = true;
-      if (bar) bar.style.width = "100%";
-      window.setTimeout(function () {
-        el.classList.add("is-done");
-        body.classList.remove("is-loading");
-        body.classList.add("is-ready");
-        window.setTimeout(revealInView, 60);
-      }, prefersStillness() ? 0 : 260);
-    }
-
-    if (doc.readyState === "complete") window.setTimeout(finish, 200);
-    else window.addEventListener("load", function () { window.setTimeout(finish, 200); });
-    window.setTimeout(finish, 3600);
+  /* Intro curtain removed: the site now opens straight to the hero. */
+  (function ready() {
+    body.classList.add("is-ready");
+    window.setTimeout(revealInView, 60);
   })();
 
   /* ------------------------------------------------------------------
