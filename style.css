@@ -2646,7 +2646,7 @@ a.project-media:focus-visible img {
 .videos {
   max-width: none;
   padding-inline: 0;
-  background: var(--bg);
+  background: transparent;
   color: var(--ink);
 }
 .videos-inner {
@@ -2686,8 +2686,8 @@ a.project-media:focus-visible img {
   aspect-ratio: 9 / 16;
   overflow: hidden;
   border-radius: 18px;
-  background: #fff;
-  border: 1px solid var(--edge-soft);
+  background: linear-gradient(150deg, rgba(255,255,255,0.88) 0%, rgba(246,242,255,0.82) 60%, rgba(214,201,255,0.76) 100%);
+  border: 1px solid rgba(255,255,255,0.65);
   box-shadow: var(--shadow-md);
 }
 .video-thumb {
