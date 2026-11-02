@@ -2648,7 +2648,7 @@ a.project-media:focus-visible img {
   .gallery-track { flex-wrap: wrap; width: auto; }
 }
 
-/* ============ VIDEOS (MotionRenders-style dark portrait grid) ============ */
+/* ============ VIDEOS (one horizontal auto-moving row) ============ */
 .videos {
   max-width: none;
   padding-inline: 0;
@@ -2674,22 +2674,20 @@ a.project-media:focus-visible img {
   color: rgba(245,243,255,0.75);
   line-height: 1.5;
 }
-.videos-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  max-width: 1440px;
-  margin: 2rem auto 0;
+.videos-strip {
+  overflow: hidden;
+  margin-top: 2rem;
   padding-inline: var(--gutter);
 }
-@media (max-width: 900px) {
-  .videos-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 480px) {
-  .videos-grid { grid-template-columns: 1fr; }
+.videos-track {
+  display: flex;
+  gap: 1rem;
+  width: max-content;
+  transition: transform 0.6s ease;
 }
 .video-card {
   position: relative;
+  flex: 0 0 clamp(220px, 24vw, 280px);
   aspect-ratio: 9 / 16;
   overflow: hidden;
   border-radius: 18px;
@@ -2722,5 +2720,22 @@ a.project-media:focus-visible img {
   background: rgba(255,255,255,0.92);
   color: #120a2e;
   font-size: 1.4rem;
+  cursor: pointer;
+}
+.videos-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.videos-arrow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: transparent;
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
   cursor: pointer;
 }

@@ -1873,16 +1873,60 @@
   if (year) year.textContent = String(new Date().getFullYear());
 })();
 
-/* Videos grid: play a Drive preview inline in its own card, like
-   MotionRenders. No auto-advance, no modal. Does not touch the 3D scenes. */
+/* Videos: one horizontal row that moves on its own, like a slideshow.
+   Advances one card at a time, loops back to the start, and pauses on
+   hover, focus, touch, or while a video is playing. Does not touch
+   the 3D scenes. */
 (function () {
-  var cards = document.querySelectorAll(".video-card");
+  var track = document.getElementById("videos-track");
+  var strip = document.getElementById("videos-strip");
+  if (!track || !strip) return;
+  var cards = track.querySelectorAll(".video-card");
+  if (!cards.length) return;
+  var index = 0;
+  var playing = false;
+  var paused = false;
+  var timer = null;
+  function step() {
+    var card = cards[0];
+    if (!card) return 300;
+    var rect = card.getBoundingClientRect();
+    var gap = 16;
+    return rect.width + gap;
+  }
+  function maxIndex() {
+    var visible = Math.max(1, Math.floor(strip.clientWidth / step()));
+    return Math.max(0, cards.length - visible);
+  }
+  function show(i) {
+    var max = maxIndex();
+    index = i > max ? 0 : (i < 0 ? max : i);
+    track.style.transform = "translateX(-" + index * step() + "px)";
+  }
+  function stop() { if (timer) { window.clearInterval(timer); timer = null; } }
+  function start() {
+    stop();
+    timer = window.setInterval(function () {
+      if (!playing && !paused) show(index + 1);
+    }, 2800);
+  }
+  var prev = document.querySelector("[data-slide-prev]");
+  var next = document.querySelector("[data-slide-next]");
+  if (prev) prev.addEventListener("click", function () { show(index - 1); });
+  if (next) next.addEventListener("click", function () { show(index + 1); });
+  strip.addEventListener("mouseenter", function () { paused = true; });
+  strip.addEventListener("mouseleave", function () { paused = false; });
+  strip.addEventListener("focusin", function () { paused = true; });
+  strip.addEventListener("focusout", function () { paused = false; });
+  strip.addEventListener("touchstart", function () { paused = true; }, { passive: true });
+  window.addEventListener("resize", function () { show(index); });
   cards.forEach(function (card) {
     var btn = card.querySelector(".video-play");
     if (!btn) return;
     btn.addEventListener("click", function () {
       var src = card.getAttribute("data-preview");
       if (!src) return;
+      playing = true;
       var frame = document.createElement("iframe");
       frame.src = src;
       frame.setAttribute("allow", "autoplay; fullscreen");
@@ -1892,4 +1936,6 @@
       card.appendChild(frame);
     });
   });
+  show(0);
+  start();
 })();
