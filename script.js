@@ -1939,3 +1939,25 @@
   show(0);
   start();
 })();
+
+/* Video editing & motion graphics: each card plays its Drive video
+   in place when the play button is pressed. */
+(function () {
+  var cards = document.querySelectorAll(".reel-media");
+  cards.forEach(function (media) {
+    var btn = media.querySelector(".reel-play");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var src = media.getAttribute("data-preview");
+      if (!src) return;
+      var frame = document.createElement("iframe");
+      frame.src = src;
+      frame.setAttribute("allow", "autoplay; fullscreen");
+      frame.setAttribute("allowfullscreen", "");
+      frame.setAttribute("title", btn.getAttribute("aria-label") || "Video preview");
+      media.innerHTML = "";
+      media.classList.add("is-playing");
+      media.appendChild(frame);
+    });
+  });
+})();
